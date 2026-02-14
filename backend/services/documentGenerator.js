@@ -106,7 +106,7 @@ async function generateDocuments(type, data) {
         fs.writeFileSync(pathAr, docAr);
 
         // Save to database
-        const relativePath Fr = path.relative(path.join(__dirname, '..'), pathFr);
+        const relativePathFr = path.relative(path.join(__dirname, '..'), pathFr);
         const relativePathAr = path.relative(path.join(__dirname, '..'), pathAr);
 
         const query = `
