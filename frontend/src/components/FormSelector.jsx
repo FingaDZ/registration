@@ -10,15 +10,15 @@ function FormSelector() {
                 <Link to="/particuliers" className="selection-card">
                     <div className="card-icon">👤</div>
                     <h2>Particuliers</h2>
-                    <p>Formulaire d'enregistrement pour les particuliers</p>
-                    <button className="btn btn-primary">Commencer →</button>
+                    <p>Enregistrement pour les clients individuels. Génération automatique des contrats et fiches d'abonnement.</p>
+                    <button className="btn btn-primary">Commencer l'enregistrement</button>
                 </Link>
 
                 <Link to="/entreprise" className="selection-card">
                     <div className="card-icon">🏢</div>
                     <h2>Entreprise</h2>
-                    <p>Formulaire d'enregistrement pour les entreprises</p>
-                    <button className="btn btn-primary">Commencer →</button>
+                    <p>Enregistrement pour les clients professionnels. Gestion complète des données d'entreprise et gérants.</p>
+                    <button className="btn btn-primary">Commencer l'enregistrement</button>
                 </Link>
             </div>
         </div>

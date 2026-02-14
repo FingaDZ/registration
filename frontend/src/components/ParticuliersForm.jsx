@@ -61,7 +61,7 @@ function ParticuliersForm() {
             <div className="form-header">
                 <button onClick={() => navigate('/')} className="btn-back">← Retour</button>
                 <h1>Formulaire Particuliers</h1>
-                <p>Remplissez tous les champs requis pour générer les documents</p>
+                <p>Remplissez les informations ci-dessous pour générer le contrat.</p>
             </div>
 
             {result && (
@@ -96,13 +96,14 @@ function ParticuliersForm() {
                     <h2>Informations Personnelles</h2>
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="Nom">Nom *</label>
+                            <label htmlFor="Nom">Nom de famille *</label>
                             <input
                                 type="text"
                                 id="Nom"
                                 name="Nom"
                                 value={formData.Nom}
                                 onChange={handleChange}
+                                placeholder="ex: BENALI"
                                 required
                             />
                         </div>
@@ -115,54 +116,82 @@ function ParticuliersForm() {
                                 name="Prenom"
                                 value={formData.Prenom}
                                 onChange={handleChange}
+                                placeholder="ex: Mohamed"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="Num_CIN">Numéro CIN *</label>
+                            <label htmlFor="Num_CIN">Numéro de la Carte Nationale (CIN) *</label>
                             <input
                                 type="text"
                                 id="Num_CIN"
                                 name="Num_CIN"
                                 value={formData.Num_CIN}
                                 onChange={handleChange}
+                                placeholder="ex: 123456789"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="email">Email *</label>
+                            <label htmlFor="date_delivery">Date de délivrance CIN</label>
+                            <input
+                                type="date"
+                                id="date_delivery"
+                                name="date_delivery"
+                                value={formData.date_delivery}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="form-group full-width">
+                            <label htmlFor="authority">Délivrée par (Autorité)</label>
+                            <input
+                                type="text"
+                                id="authority"
+                                name="authority"
+                                value={formData.authority}
+                                onChange={handleChange}
+                                placeholder="ex: APC Alger Centre"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="email">Adresse Email *</label>
                             <input
                                 type="email"
                                 id="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
+                                placeholder="client@example.com"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="mobile">Mobile *</label>
+                            <label htmlFor="mobile">Numéro Mobile *</label>
                             <input
                                 type="tel"
                                 id="mobile"
                                 name="mobile"
                                 value={formData.mobile}
                                 onChange={handleChange}
+                                placeholder="05XXXXXXXX"
                                 required
                             />
                         </div>
 
                         <div className="form-group full-width">
-                            <label htmlFor="Adresse">Adresse *</label>
+                            <label htmlFor="Adresse">Adresse de résidence complète *</label>
                             <input
                                 type="text"
                                 id="Adresse"
                                 name="Adresse"
                                 value={formData.Adresse}
                                 onChange={handleChange}
+                                placeholder="ex: 12 Rue des Martyrs, Alger"
                                 required
                             />
                         </div>
@@ -170,22 +199,61 @@ function ParticuliersForm() {
                 </div>
 
                 <div className="form-section">
-                    <h2>Localisation</h2>
+                    <h2>Données Techniques & Localisation</h2>
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="place">Lieu *</label>
+                            <label htmlFor="cpe_model">Modèle du CPE (Modem) *</label>
+                            <input
+                                type="text"
+                                id="cpe_model"
+                                name="cpe_model"
+                                value={formData.cpe_model}
+                                onChange={handleChange}
+                                placeholder="ex: Huawei B310"
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="cpe_serial">Numéro de série (S/N) *</label>
+                            <input
+                                type="text"
+                                id="cpe_serial"
+                                name="cpe_serial"
+                                value={formData.cpe_serial}
+                                onChange={handleChange}
+                                placeholder="ex: A1B2C3D4E5"
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="place">Fait à (Lieu) *</label>
                             <input
                                 type="text"
                                 id="place"
                                 name="place"
                                 value={formData.place}
                                 onChange={handleChange}
+                                placeholder="ex: Alger"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="latitude">Latitude</label>
+                            <label htmlFor="date">Date du formulaire *</label>
+                            <input
+                                type="date"
+                                id="date"
+                                name="date"
+                                value={formData.date}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="latitude">Latitude GPS</label>
                             <input
                                 type="text"
                                 id="latitude"
@@ -197,7 +265,7 @@ function ParticuliersForm() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="longitude">Longitude</label>
+                            <label htmlFor="longitude">Longitude GPS</label>
                             <input
                                 type="text"
                                 id="longitude"
@@ -205,69 +273,6 @@ function ParticuliersForm() {
                                 value={formData.longitude}
                                 onChange={handleChange}
                                 placeholder="Ex: 3.0588"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="form-section">
-                    <h2>Informations Techniques</h2>
-                    <div className="form-grid">
-                        <div className="form-group">
-                            <label htmlFor="cpe_model">Modèle CPE *</label>
-                            <input
-                                type="text"
-                                id="cpe_model"
-                                name="cpe_model"
-                                value={formData.cpe_model}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="cpe_serial">Numéro de série CPE *</label>
-                            <input
-                                type="text"
-                                id="cpe_serial"
-                                name="cpe_serial"
-                                value={formData.cpe_serial}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="authority">Autorité</label>
-                            <input
-                                type="text"
-                                id="authority"
-                                name="authority"
-                                value={formData.authority}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="date_delivery">Date CIN</label>
-                            <input
-                                type="date"
-                                id="date_delivery"
-                                name="date_delivery"
-                                value={formData.date_delivery}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="date">Date du formulaire</label>
-                            <input
-                                type="date"
-                                id="date"
-                                name="date"
-                                value={formData.date}
-                                onChange={handleChange}
-                                required
                             />
                         </div>
                     </div>

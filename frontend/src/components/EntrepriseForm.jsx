@@ -67,7 +67,7 @@ function EntrepriseForm() {
             <div className="form-header">
                 <button onClick={() => navigate('/')} className="btn-back">← Retour</button>
                 <h1>Formulaire Entreprise</h1>
-                <p>Remplissez tous les champs requis pour générer les documents</p>
+                <p>Remplissez les informations de l'entreprise et du gérant.</p>
             </div>
 
             {result && (
@@ -99,7 +99,7 @@ function EntrepriseForm() {
 
             <form onSubmit={handleSubmit} className="form">
                 <div className="form-section">
-                    <h2>Informations Entreprise</h2>
+                    <h2>Informations de l'Entreprise</h2>
                     <div className="form-grid">
                         <div className="form-group full-width">
                             <label htmlFor="raison_sociale">Raison Sociale *</label>
@@ -109,76 +109,82 @@ function EntrepriseForm() {
                                 name="raison_sociale"
                                 value={formData.raison_sociale}
                                 onChange={handleChange}
+                                placeholder="ex: SARL EXEMPLE"
                                 required
                             />
                         </div>
 
                         <div className="form-group full-width">
-                            <label htmlFor="Adresse_entreprise">Adresse Entreprise *</label>
+                            <label htmlFor="Adresse_entreprise">Adresse du Siège Social *</label>
                             <input
                                 type="text"
                                 id="Adresse_entreprise"
                                 name="Adresse_entreprise"
                                 value={formData.Adresse_entreprise}
                                 onChange={handleChange}
+                                placeholder="ex: Zone Industrielle Oued Smar, Alger"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="nif">NIF *</label>
+                            <label htmlFor="nif">Numéro d'Identification Fiscale (NIF) *</label>
                             <input
                                 type="text"
                                 id="nif"
                                 name="nif"
                                 value={formData.nif}
                                 onChange={handleChange}
+                                placeholder="ex: 000111222333444"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="nis">NIS *</label>
+                            <label htmlFor="nis">Numéro d'Identification Statistique (NIS) *</label>
                             <input
                                 type="text"
                                 id="nis"
                                 name="nis"
                                 value={formData.nis}
                                 onChange={handleChange}
+                                placeholder="ex: 12345678"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="rc">RC *</label>
+                            <label htmlFor="rc">Registre de Commerce (RC) *</label>
                             <input
                                 type="text"
                                 id="rc"
                                 name="rc"
                                 value={formData.rc}
                                 onChange={handleChange}
+                                placeholder="ex: 16/00-1234567B12"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="article">Article</label>
+                            <label htmlFor="article">Numéro Article d'Imposition</label>
                             <input
                                 type="text"
                                 id="article"
                                 name="article"
                                 value={formData.article}
                                 onChange={handleChange}
+                                placeholder="ex: 12345678901"
                             />
                         </div>
                     </div>
                 </div>
 
                 <div className="form-section">
-                    <h2>Informations Gérant</h2>
+                    <h2>Informations du Gérant / Représentant</h2>
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="Nom">Nom *</label>
+                            <label htmlFor="Nom">Nom du gérant *</label>
                             <input
                                 type="text"
                                 id="Nom"
@@ -190,7 +196,7 @@ function EntrepriseForm() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="Prenom">Prénom *</label>
+                            <label htmlFor="Prenom">Prénom du gérant *</label>
                             <input
                                 type="text"
                                 id="Prenom"
@@ -214,7 +220,7 @@ function EntrepriseForm() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="date_cin_gerant">Date CIN Gérant</label>
+                            <label htmlFor="date_cin_gerant">Date de délivrance CIN</label>
                             <input
                                 type="date"
                                 id="date_cin_gerant"
@@ -224,8 +230,8 @@ function EntrepriseForm() {
                             />
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="authority_gerant">Autorité Gérant</label>
+                        <div className="form-group full-width">
+                            <label htmlFor="authority_gerant">Autorité de délivrance</label>
                             <input
                                 type="text"
                                 id="authority_gerant"
@@ -236,7 +242,7 @@ function EntrepriseForm() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="mail">Email *</label>
+                            <label htmlFor="mail">Email professionnel *</label>
                             <input
                                 type="email"
                                 id="mail"
@@ -248,7 +254,7 @@ function EntrepriseForm() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="mobilegerant">Mobile Gérant *</label>
+                            <label htmlFor="mobilegerant">Mobile gérant *</label>
                             <input
                                 type="tel"
                                 id="mobilegerant"
@@ -260,7 +266,7 @@ function EntrepriseForm() {
                         </div>
 
                         <div className="form-group full-width">
-                            <label htmlFor="Adresse">Adresse Gérant</label>
+                            <label htmlFor="Adresse">Adresse personnelle du gérant</label>
                             <input
                                 type="text"
                                 id="Adresse"
@@ -273,63 +279,23 @@ function EntrepriseForm() {
                 </div>
 
                 <div className="form-section">
-                    <h2>Localisation</h2>
+                    <h2>Données Techniques & Localisation</h2>
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="place">Lieu *</label>
-                            <input
-                                type="text"
-                                id="place"
-                                name="place"
-                                value={formData.place}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="latitude">Latitude</label>
-                            <input
-                                type="text"
-                                id="latitude"
-                                name="latitude"
-                                value={formData.latitude}
-                                onChange={handleChange}
-                                placeholder="Ex: 36.7538"
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="longitude">Longitude</label>
-                            <input
-                                type="text"
-                                id="longitude"
-                                name="longitude"
-                                value={formData.longitude}
-                                onChange={handleChange}
-                                placeholder="Ex: 3.0588"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="form-section">
-                    <h2>Informations Techniques</h2>
-                    <div className="form-grid">
-                        <div className="form-group">
-                            <label htmlFor="cpe_model">Modèle CPE *</label>
+                            <label htmlFor="cpe_model">Modèle du CPE (Modem) *</label>
                             <input
                                 type="text"
                                 id="cpe_model"
                                 name="cpe_model"
                                 value={formData.cpe_model}
                                 onChange={handleChange}
+                                placeholder="ex: Huawei B310"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="cpe_serial">Numéro de série CPE *</label>
+                            <label htmlFor="cpe_serial">Numéro de série (S/N) *</label>
                             <input
                                 type="text"
                                 id="cpe_serial"
@@ -341,7 +307,19 @@ function EntrepriseForm() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="date">Date du formulaire</label>
+                            <label htmlFor="place">Fait à (Lieu) *</label>
+                            <input
+                                type="text"
+                                id="place"
+                                name="place"
+                                value={formData.place}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="date">Date du formulaire *</label>
                             <input
                                 type="date"
                                 id="date"
@@ -349,6 +327,30 @@ function EntrepriseForm() {
                                 value={formData.date}
                                 onChange={handleChange}
                                 required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="latitude">Latitude GPS</label>
+                            <input
+                                type="text"
+                                id="latitude"
+                                name="latitude"
+                                value={formData.latitude}
+                                onChange={handleChange}
+                                placeholder="Ex: 36.7538"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="longitude">Longitude GPS</label>
+                            <input
+                                type="text"
+                                id="longitude"
+                                name="longitude"
+                                value={formData.longitude}
+                                onChange={handleChange}
+                                placeholder="Ex: 3.0588"
                             />
                         </div>
                     </div>
