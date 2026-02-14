@@ -11,7 +11,8 @@ function App() {
                 <nav className="navbar">
                     <div className="nav-container">
                         <Link to="/" className="nav-logo">
-                            📋 Système d'Enregistrement
+                            <img src="/logo.jpg" alt="Logo" className="nav-logo-img" />
+                            <span>SARL AIRBAND</span>
                         </Link>
                         <div className="nav-links">
                             <Link to="/" className="nav-link">Accueil</Link>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 function FormSelector() {
     return (
         <div className="form-selector">
+            <h1 className="brand-title-large">SARL AIRBAND</h1>
             <h1>Choisissez le type de formulaire</h1>
             <p className="subtitle">Sélectionnez le type d'enregistrement que vous souhaitez effectuer</p>
 

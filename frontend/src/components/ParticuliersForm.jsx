@@ -102,8 +102,7 @@ function ParticuliersForm() {
             <div className="form-header">
                 <button onClick={() => navigate('/')} className="btn-back">← Retour</button>
 
-                <img src="/logo.jpg" alt="SARL AIRBAND" className="brand-logo" />
-                <h2 className="brand-title">SARL AIRBAND</h2>
+
 
                 <h1>Formulaire Particuliers</h1>
                 <p>Remplissez les informations ci-dessous pour générer le contrat.</p>

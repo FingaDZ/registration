@@ -107,8 +107,7 @@ function EntrepriseForm() {
             <div className="form-header">
                 <button onClick={() => navigate('/')} className="btn-back">← Retour</button>
 
-                <img src="/logo.jpg" alt="SARL AIRBAND" className="brand-logo" />
-                <h2 className="brand-title">SARL AIRBAND</h2>
+
 
                 <h1>Formulaire Entreprise</h1>
                 <p>Remplissez les informations de l'entreprise et du gérant.</p>
