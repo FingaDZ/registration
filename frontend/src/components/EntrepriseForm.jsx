@@ -28,7 +28,6 @@ function EntrepriseForm() {
         longitude: '',
         cpe_model: '',
         cpe_serial: '',
-        Date: new Date().toISOString().split('T')[0],
         date: new Date().toISOString().split('T')[0]
     });
 

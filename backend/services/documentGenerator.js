@@ -26,6 +26,16 @@ function generateReference() {
     return `REG-${year}${month}${day}-${random}`;
 }
 
+// Format date to DD-MM-YYYY
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+
 // Generate document from template
 function generateDocumentFromTemplate(templatePath, data) {
     try {
@@ -75,15 +85,23 @@ async function generateDocuments(type, data) {
         // Generate reference
         const reference = generateReference();
 
-        // Prepare data with reference
-        const documentData = {
+        // Format dates to DD-MM-YYYY
+        const formattedData = {
             ...data,
-            Reference_client: reference
+            date: formatDate(data.date),
+            date_delivery: formatDate(data.date_delivery),
+            Date: formatDate(data.Date || data.date),
+            Reference_client: '' // Leave empty as requested
         };
 
+        // For entreprise, also format date_cin_gerant
+        if (type === 'entreprise' && data.date_cin_gerant) {
+            formattedData.date_cin_gerant = formatDate(data.date_cin_gerant);
+        }
+
         // Generate both documents
-        const docFr = generateDocumentFromTemplate(templateFr, documentData);
-        const docAr = generateDocumentFromTemplate(templateAr, documentData);
+        const docFr = generateDocumentFromTemplate(templateFr, formattedData);
+        const docAr = generateDocumentFromTemplate(templateAr, formattedData);
 
         // Create output directory structure
         const date = new Date();
@@ -118,7 +136,7 @@ async function generateDocuments(type, data) {
         const result = await pool.query(query, [
             reference,
             type,
-            JSON.stringify(documentData),
+            JSON.stringify(formattedData),
             relativePathFr,
             relativePathAr
         ]);

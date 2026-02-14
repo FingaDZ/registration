@@ -22,7 +22,6 @@ function ParticuliersForm() {
         cpe_serial: '',
         authority: '',
         date_delivery: '',
-        Date: new Date().toISOString().split('T')[0],
         date: new Date().toISOString().split('T')[0]
     });
 
@@ -250,13 +249,25 @@ function ParticuliersForm() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="date_delivery">Date de livraison</label>
+                            <label htmlFor="date_delivery">Date CIN</label>
                             <input
                                 type="date"
                                 id="date_delivery"
                                 name="date_delivery"
                                 value={formData.date_delivery}
                                 onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="date">Date du formulaire</label>
+                            <input
+                                type="date"
+                                id="date"
+                                name="date"
+                                value={formData.date}
+                                onChange={handleChange}
+                                required
                             />
                         </div>
                     </div>
