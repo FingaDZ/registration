@@ -26,7 +26,7 @@ function EntrepriseForm() {
         date_cin_gerant: '',
         authority_gerant: '',
         mail: '',
-        mobilegerant: '',
+        mobile_gerant: '',
         Adresse: '',
         place: '',
         latitude: '',
@@ -273,12 +273,12 @@ function EntrepriseForm() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="mobilegerant">Mobile gérant *</label>
+                            <label htmlFor="mobile_gerant">Mobile gérant *</label>
                             <input
                                 type="tel"
-                                id="mobilegerant"
-                                name="mobilegerant"
-                                value={formData.mobilegerant}
+                                id="mobile_gerant"
+                                name="mobile_gerant"
+                                value={formData.mobile_gerant}
                                 onChange={handleChange}
                                 required
                             />
