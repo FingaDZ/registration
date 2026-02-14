@@ -1,6 +1,4 @@
--- Registration System Database Schema
-
--- Documents table: stores metadata for all generated documents
+-- Create documents table
 CREATE TABLE IF NOT EXISTS documents (
     id SERIAL PRIMARY KEY,
     reference VARCHAR(50) UNIQUE NOT NULL,
@@ -8,16 +6,16 @@ CREATE TABLE IF NOT EXISTS documents (
     user_data JSONB NOT NULL,
     file_path_fr VARCHAR(500) NOT NULL,
     file_path_ar VARCHAR(500) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes for faster queries
+-- Create indexes
 CREATE INDEX IF NOT EXISTS idx_documents_reference ON documents(reference);
 CREATE INDEX IF NOT EXISTS idx_documents_type ON documents(document_type);
-CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents(created_at);
 
--- Function to update updated_at timestamp
+-- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -26,6 +24,9 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Trigger to automatically update updated_at
-CREATE TRIGGER update_documents_updated_at BEFORE UPDATE ON documents
-FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Drop trigger if exists, then create it
+DROP TRIGGER IF EXISTS update_documents_updated_at ON documents;
+CREATE TRIGGER update_documents_updated_at
+    BEFORE UPDATE ON documents
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();

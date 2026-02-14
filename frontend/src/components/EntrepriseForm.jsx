@@ -339,6 +339,18 @@ function EntrepriseForm() {
                                 required
                             />
                         </div>
+
+                        <div className="form-group">
+                            <label htmlFor="date">Date du formulaire</label>
+                            <input
+                                type="date"
+                                id="date"
+                                name="date"
+                                value={formData.date}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
                     </div>
                 </div>
 
