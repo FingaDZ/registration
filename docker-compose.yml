@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  database:
+    image: postgres:15-alpine
+    container_name: registration_db
+    environment:
+      POSTGRES_DB: registration
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - registration-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: registration_backend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: registration
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    volumes:
+      - ./backend/templates:/app/templates
+      - generated-docs:/app/generated
+    ports:
+      - "3000:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - registration-network
+    restart: unless-stopped
+
+  # Frontend (Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: registration_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - registration-network
+    restart: unless-stopped
+
+networks:
+  registration-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  generated-docs:
