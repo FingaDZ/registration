@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import DynamicSelect from './DynamicSelect';
 
 function EntrepriseForm() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
+
+    // Dynamic Data States
+    const [cpeModels, setCpeModels] = useState([]);
+    const [internetOffers, setInternetOffers] = useState([]);
 
     const [formData, setFormData] = useState({
         raison_sociale: '',
@@ -28,14 +33,46 @@ function EntrepriseForm() {
         longitude: '',
         cpe_model: '',
         cpe_serial: '',
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        internet_offer: ''
     });
+
+    useEffect(() => {
+        fetchConfig();
+    }, []);
+
+    const fetchConfig = async () => {
+        try {
+            const [modelsRes, offersRes] = await Promise.all([
+                axios.get('/api/config/models'),
+                axios.get('/api/config/offers')
+            ]);
+            setCpeModels(modelsRes.data.map(m => m.name));
+            setInternetOffers(offersRes.data.map(o => o.name));
+        } catch (err) {
+            console.error('Error fetching config:', err);
+        }
+    };
+
+    const handleAddModel = async (newValue) => {
+        const res = await axios.post('/api/config/models', { name: newValue });
+        return res.data.name;
+    };
+
+    const handleAddOffer = async (newValue) => {
+        const res = await axios.post('/api/config/offers', { name: newValue });
+        return res.data.name;
+    };
 
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
+    };
+
+    const handleSelectChange = (name, value) => {
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -51,6 +88,9 @@ function EntrepriseForm() {
             });
 
             setResult(response.data);
+            setTimeout(() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }, 100);
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur lors de la génération du document');
         } finally {
@@ -66,30 +106,13 @@ function EntrepriseForm() {
         <div className="form-container">
             <div className="form-header">
                 <button onClick={() => navigate('/')} className="btn-back">← Retour</button>
+
+                <img src="/logo.jpg" alt="SARL AIRBAND" className="brand-logo" />
+                <h2 className="brand-title">SARL AIRBAND</h2>
+
                 <h1>Formulaire Entreprise</h1>
                 <p>Remplissez les informations de l'entreprise et du gérant.</p>
             </div>
-
-            {result && (
-                <div className="alert alert-success">
-                    <h3>✓ Documents générés avec succès!</h3>
-                    <p><strong>Référence:</strong> {result.reference}</p>
-                    <div className="download-buttons">
-                        <button
-                            onClick={() => downloadDocument(result.reference, 'fr')}
-                            className="btn btn-success"
-                        >
-                            📄 Télécharger (Français)
-                        </button>
-                        <button
-                            onClick={() => downloadDocument(result.reference, 'ar')}
-                            className="btn btn-success"
-                        >
-                            📄 Télécharger (Arabe)
-                        </button>
-                    </div>
-                </div>
-            )}
 
             {error && (
                 <div className="alert alert-error">
@@ -128,27 +151,25 @@ function EntrepriseForm() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="nif">Numéro d'Identification Fiscale (NIF) *</label>
+                            <label htmlFor="nif">NIF *</label>
                             <input
                                 type="text"
                                 id="nif"
                                 name="nif"
                                 value={formData.nif}
                                 onChange={handleChange}
-                                placeholder="ex: 000111222333444"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="nis">Numéro d'Identification Statistique (NIS) *</label>
+                            <label htmlFor="nis">NIS *</label>
                             <input
                                 type="text"
                                 id="nis"
                                 name="nis"
                                 value={formData.nis}
                                 onChange={handleChange}
-                                placeholder="ex: 12345678"
                                 required
                             />
                         </div>
@@ -161,7 +182,6 @@ function EntrepriseForm() {
                                 name="rc"
                                 value={formData.rc}
                                 onChange={handleChange}
-                                placeholder="ex: 16/00-1234567B12"
                                 required
                             />
                         </div>
@@ -174,7 +194,6 @@ function EntrepriseForm() {
                                 name="article"
                                 value={formData.article}
                                 onChange={handleChange}
-                                placeholder="ex: 12345678901"
                             />
                         </div>
                     </div>
@@ -231,25 +250,26 @@ function EntrepriseForm() {
                         </div>
 
                         <div className="form-group full-width">
-                            <label htmlFor="authority_gerant">Autorité de délivrance</label>
+                            <label htmlFor="authority_gerant">Autorité de délivrance *</label>
                             <input
                                 type="text"
                                 id="authority_gerant"
                                 name="authority_gerant"
                                 value={formData.authority_gerant}
                                 onChange={handleChange}
+                                required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="mail">Email professionnel *</label>
+                            <label htmlFor="mail">Email professionnel</label>
                             <input
                                 type="email"
                                 id="mail"
                                 name="mail"
                                 value={formData.mail}
                                 onChange={handleChange}
-                                required
+                                placeholder="Optionnel"
                             />
                         </div>
 
@@ -279,20 +299,18 @@ function EntrepriseForm() {
                 </div>
 
                 <div className="form-section">
-                    <h2>Données Techniques & Localisation</h2>
+                    <h2>Données Techniques & Offre</h2>
                     <div className="form-grid">
-                        <div className="form-group">
-                            <label htmlFor="cpe_model">Modèle du CPE (Modem) *</label>
-                            <input
-                                type="text"
-                                id="cpe_model"
-                                name="cpe_model"
-                                value={formData.cpe_model}
-                                onChange={handleChange}
-                                placeholder="ex: Huawei B310"
-                                required
-                            />
-                        </div>
+
+                        <DynamicSelect
+                            label="Modèle du CPE"
+                            value={formData.cpe_model}
+                            onChange={(val) => handleSelectChange('cpe_model', val)}
+                            options={cpeModels}
+                            onAdd={handleAddModel}
+                            placeholder="Choisir un modèle..."
+                            required={true}
+                        />
 
                         <div className="form-group">
                             <label htmlFor="cpe_serial">Numéro de série (S/N) *</label>
@@ -306,6 +324,16 @@ function EntrepriseForm() {
                             />
                         </div>
 
+                        <DynamicSelect
+                            label="Offre Internet"
+                            value={formData.internet_offer}
+                            onChange={(val) => handleSelectChange('internet_offer', val)}
+                            options={internetOffers}
+                            onAdd={handleAddOffer}
+                            placeholder="Choisir une offre..."
+                            required={true}
+                        />
+
                         <div className="form-group">
                             <label htmlFor="place">Fait à (Lieu) *</label>
                             <input
@@ -314,6 +342,7 @@ function EntrepriseForm() {
                                 name="place"
                                 value={formData.place}
                                 onChange={handleChange}
+                                placeholder="ex: Alger"
                                 required
                             />
                         </div>
@@ -338,7 +367,7 @@ function EntrepriseForm() {
                                 name="latitude"
                                 value={formData.latitude}
                                 onChange={handleChange}
-                                placeholder="Ex: 36.7538"
+                                placeholder="Ex: 36.7538 (Optionnel)"
                             />
                         </div>
 
@@ -350,7 +379,7 @@ function EntrepriseForm() {
                                 name="longitude"
                                 value={formData.longitude}
                                 onChange={handleChange}
-                                placeholder="Ex: 3.0588"
+                                placeholder="Ex: 3.0588 (Optionnel)"
                             />
                         </div>
                     </div>
@@ -365,6 +394,29 @@ function EntrepriseForm() {
                     </button>
                 </div>
             </form>
+
+            {result && (
+                <div className="result-section">
+                    <div className="alert alert-success">
+                        <h3>✓ Documents générés avec succès!</h3>
+                        <p><strong>Référence:</strong> {result.reference}</p>
+                        <div className="download-buttons">
+                            <button
+                                onClick={() => downloadDocument(result.reference, 'fr')}
+                                className="btn btn-success"
+                            >
+                                📄 Télécharger (Français)
+                            </button>
+                            <button
+                                onClick={() => downloadDocument(result.reference, 'ar')}
+                                className="btn btn-success"
+                            >
+                                📄 Télécharger (Arabe)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

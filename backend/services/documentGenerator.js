@@ -94,9 +94,17 @@ async function generateDocuments(type, data) {
             Reference_client: '' // Leave empty as requested
         };
 
-        // For entreprise, also format date_cin_gerant
         if (type === 'entreprise' && data.date_cin_gerant) {
             formattedData.date_cin_gerant = formatDate(data.date_cin_gerant);
+        }
+
+        // Handle Internet Offer mapping
+        if (data.internet_offer) {
+            formattedData.offre_p = type === 'particuliers' ? data.internet_offer : '';
+            formattedData.offre_e = type === 'entreprise' ? data.internet_offer : '';
+        } else {
+            formattedData.offre_p = '';
+            formattedData.offre_e = '';
         }
 
         // Generate both documents

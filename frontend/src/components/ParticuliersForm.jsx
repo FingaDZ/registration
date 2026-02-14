@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import DynamicSelect from './DynamicSelect';
 
 function ParticuliersForm() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
+
+    // Dynamic Data States
+    const [cpeModels, setCpeModels] = useState([]);
+    const [internetOffers, setInternetOffers] = useState([]);
 
     const [formData, setFormData] = useState({
         Nom: '',
@@ -22,14 +27,46 @@ function ParticuliersForm() {
         cpe_serial: '',
         authority: '',
         date_delivery: '',
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        internet_offer: '' // New field for offer
     });
+
+    useEffect(() => {
+        fetchConfig();
+    }, []);
+
+    const fetchConfig = async () => {
+        try {
+            const [modelsRes, offersRes] = await Promise.all([
+                axios.get('/api/config/models'),
+                axios.get('/api/config/offers')
+            ]);
+            setCpeModels(modelsRes.data.map(m => m.name));
+            setInternetOffers(offersRes.data.map(o => o.name));
+        } catch (err) {
+            console.error('Error fetching config:', err);
+        }
+    };
+
+    const handleAddModel = async (newValue) => {
+        const res = await axios.post('/api/config/models', { name: newValue });
+        return res.data.name;
+    };
+
+    const handleAddOffer = async (newValue) => {
+        const res = await axios.post('/api/config/offers', { name: newValue });
+        return res.data.name;
+    };
 
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
+    };
+
+    const handleSelectChange = (name, value) => {
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -45,6 +82,10 @@ function ParticuliersForm() {
             });
 
             setResult(response.data);
+            // Scroll to bottom to see results
+            setTimeout(() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }, 100);
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur lors de la génération du document');
         } finally {
@@ -60,30 +101,13 @@ function ParticuliersForm() {
         <div className="form-container">
             <div className="form-header">
                 <button onClick={() => navigate('/')} className="btn-back">← Retour</button>
+
+                <img src="/logo.jpg" alt="SARL AIRBAND" className="brand-logo" />
+                <h2 className="brand-title">SARL AIRBAND</h2>
+
                 <h1>Formulaire Particuliers</h1>
                 <p>Remplissez les informations ci-dessous pour générer le contrat.</p>
             </div>
-
-            {result && (
-                <div className="alert alert-success">
-                    <h3>✓ Documents générés avec succès!</h3>
-                    <p><strong>Référence:</strong> {result.reference}</p>
-                    <div className="download-buttons">
-                        <button
-                            onClick={() => downloadDocument(result.reference, 'fr')}
-                            className="btn btn-success"
-                        >
-                            📄 Télécharger (Français)
-                        </button>
-                        <button
-                            onClick={() => downloadDocument(result.reference, 'ar')}
-                            className="btn btn-success"
-                        >
-                            📄 Télécharger (Arabe)
-                        </button>
-                    </div>
-                </div>
-            )}
 
             {error && (
                 <div className="alert alert-error">
@@ -129,24 +153,24 @@ function ParticuliersForm() {
                                 name="Num_CIN"
                                 value={formData.Num_CIN}
                                 onChange={handleChange}
-                                placeholder="ex: 123456789"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="date_delivery">Date de délivrance CIN</label>
+                            <label htmlFor="date_delivery">Date de délivrance CIN *</label>
                             <input
                                 type="date"
                                 id="date_delivery"
                                 name="date_delivery"
                                 value={formData.date_delivery}
                                 onChange={handleChange}
+                                required
                             />
                         </div>
 
                         <div className="form-group full-width">
-                            <label htmlFor="authority">Délivrée par (Autorité)</label>
+                            <label htmlFor="authority">Délivrée par (Autorité) *</label>
                             <input
                                 type="text"
                                 id="authority"
@@ -154,19 +178,19 @@ function ParticuliersForm() {
                                 value={formData.authority}
                                 onChange={handleChange}
                                 placeholder="ex: APC Alger Centre"
+                                required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="email">Adresse Email *</label>
+                            <label htmlFor="email">Adresse Email</label>
                             <input
                                 type="email"
                                 id="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                placeholder="client@example.com"
-                                required
+                                placeholder="Optionnel"
                             />
                         </div>
 
@@ -199,20 +223,18 @@ function ParticuliersForm() {
                 </div>
 
                 <div className="form-section">
-                    <h2>Données Techniques & Localisation</h2>
+                    <h2>Données Techniques & Offre</h2>
                     <div className="form-grid">
-                        <div className="form-group">
-                            <label htmlFor="cpe_model">Modèle du CPE (Modem) *</label>
-                            <input
-                                type="text"
-                                id="cpe_model"
-                                name="cpe_model"
-                                value={formData.cpe_model}
-                                onChange={handleChange}
-                                placeholder="ex: Huawei B310"
-                                required
-                            />
-                        </div>
+
+                        <DynamicSelect
+                            label="Modèle du CPE"
+                            value={formData.cpe_model}
+                            onChange={(val) => handleSelectChange('cpe_model', val)}
+                            options={cpeModels}
+                            onAdd={handleAddModel}
+                            placeholder="Choisir un modèle..."
+                            required={true}
+                        />
 
                         <div className="form-group">
                             <label htmlFor="cpe_serial">Numéro de série (S/N) *</label>
@@ -222,10 +244,19 @@ function ParticuliersForm() {
                                 name="cpe_serial"
                                 value={formData.cpe_serial}
                                 onChange={handleChange}
-                                placeholder="ex: A1B2C3D4E5"
                                 required
                             />
                         </div>
+
+                        <DynamicSelect
+                            label="Offre Internet"
+                            value={formData.internet_offer}
+                            onChange={(val) => handleSelectChange('internet_offer', val)}
+                            options={internetOffers}
+                            onAdd={handleAddOffer}
+                            placeholder="Choisir une offre..."
+                            required={true}
+                        />
 
                         <div className="form-group">
                             <label htmlFor="place">Fait à (Lieu) *</label>
@@ -260,7 +291,7 @@ function ParticuliersForm() {
                                 name="latitude"
                                 value={formData.latitude}
                                 onChange={handleChange}
-                                placeholder="Ex: 36.7538"
+                                placeholder="Ex: 36.7538 (Optionnel)"
                             />
                         </div>
 
@@ -272,7 +303,7 @@ function ParticuliersForm() {
                                 name="longitude"
                                 value={formData.longitude}
                                 onChange={handleChange}
-                                placeholder="Ex: 3.0588"
+                                placeholder="Ex: 3.0588 (Optionnel)"
                             />
                         </div>
                     </div>
@@ -287,6 +318,29 @@ function ParticuliersForm() {
                     </button>
                 </div>
             </form>
+
+            {result && (
+                <div className="result-section">
+                    <div className="alert alert-success">
+                        <h3>✓ Documents générés avec succès!</h3>
+                        <p><strong>Référence:</strong> {result.reference}</p>
+                        <div className="download-buttons">
+                            <button
+                                onClick={() => downloadDocument(result.reference, 'fr')}
+                                className="btn btn-success"
+                            >
+                                📄 Télécharger (Français)
+                            </button>
+                            <button
+                                onClick={() => downloadDocument(result.reference, 'ar')}
+                                className="btn btn-success"
+                            >
+                                📄 Télécharger (Arabe)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

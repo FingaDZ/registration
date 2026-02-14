@@ -223,4 +223,56 @@ router.get('/health', async (req, res) => {
     }
 });
 
+// GET /api/config/models
+router.get('/config/models', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM cpe_models ORDER BY name ASC');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST /api/config/models
+router.post('/config/models', async (req, res) => {
+    try {
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ error: 'Name is required' });
+
+        const result = await pool.query(
+            'INSERT INTO cpe_models (name) VALUES ($1) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING *',
+            [name]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /api/config/offers
+router.get('/config/offers', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM internet_offers ORDER BY name ASC');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST /api/config/offers
+router.post('/config/offers', async (req, res) => {
+    try {
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ error: 'Name is required' });
+
+        const result = await pool.query(
+            'INSERT INTO internet_offers (name) VALUES ($1) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING *',
+            [name]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
