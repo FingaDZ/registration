@@ -119,10 +119,10 @@ function mapEntrepriseToDolibarr(data) {
         address: data.Adresse_entreprise || '',
         town: data.place || '',
         country_code: 'DZ',
-        idprof1: data.rc || '',      // RC
-        idprof2: data.nif || '',     // NIF
-        idprof3: data.article || '', // Article d'Imposition (AI)
-        idprof4: data.nis || '',     // NIS
+        idprof1: data.rc || '',      // RC (ProfId1DZ)
+        idprof2: data.article || '', // Article (ProfId2DZ)
+        idprof3: data.nif || '',     // NIF (ProfId3DZ)
+        idprof4: data.nis || '',     // NIS (ProfId4DZ)
         client: '1',                // Mark as customer
         code_client: '-1',          // Auto-generate client code
         fournisseur: '0',           // Not a supplier
