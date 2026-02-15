@@ -10,7 +10,8 @@ build/
 *.log
 
 # Environment variables
-.env
+# .env
+
 .env.local
 .env.*.local
 

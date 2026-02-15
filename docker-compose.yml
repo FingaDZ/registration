@@ -16,7 +16,7 @@ services:
     networks:
       - registration-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,6 +35,9 @@ services:
       DB_NAME: registration
       DB_USER: postgres
       DB_PASSWORD: postgres
+      DOLIBARR_API_URL: ${DOLIBARR_API_URL}
+      DOLIBARR_API_KEY: ${DOLIBARR_API_KEY}
+      DOLIBARR_ENABLED: ${DOLIBARR_ENABLED}
     volumes:
       - ./backend/templates:/app/templates
       - generated-docs:/app/generated
