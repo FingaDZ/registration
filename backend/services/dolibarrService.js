@@ -120,8 +120,8 @@ function mapEntrepriseToDolibarr(data) {
         town: data.place || '',
         country_code: 'DZ',
         idprof1: data.rc || '',      // RC (ProfId1DZ)
-        idprof2: data.article || '', // Article (ProfId2DZ)
-        idprof3: data.nif || '',     // NIF (ProfId3DZ)
+        idprof2: data.nif || '',     // NIF (ProfId2DZ - Observed NIF on server)
+        idprof3: data.article || '', // Article (ProfId3DZ - Observed AI on server)
         idprof4: data.nis || '',     // NIS (ProfId4DZ)
         client: '1',                // Mark as customer
         code_client: '-1',          // Auto-generate client code
