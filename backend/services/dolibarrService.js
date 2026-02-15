@@ -127,7 +127,14 @@ function mapEntrepriseToDolibarr(data) {
         code_client: '-1',          // Auto-generate client code
         fournisseur: '0',           // Not a supplier
         typent_code: 'TE_SMALL',    // Company type (small/medium enterprise)
+        code_client: '-1',          // Auto-generate client code
+        fournisseur: '0',           // Not a supplier
+        typent_code: 'TE_SMALL',    // Company type (small/medium enterprise)
         status: '1',                // Active
+        price_level: '2',           // Niveau de prix 2
+        cond_reglement_code: 'RECEP', // A réception
+        mode_reglement_code: 'LIQ',   // Espèce
+        fk_account: '1',              // Compte bancaire 001
         note_private: [
             `Gérant: ${data.Prenom || ''} ${data.Nom || ''}`,
             `CIN Gérant: ${data.numero_cin_gerant || ''}`,
