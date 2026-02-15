@@ -107,6 +107,9 @@ async function generateDocuments(type, data) {
             formattedData.offre_e = '';
         }
 
+        // Map contract ID to the auto-generated reference
+        formattedData.contratid = reference;
+
         // Generate both documents
         const docFr = generateDocumentFromTemplate(templateFr, formattedData);
         const docAr = generateDocumentFromTemplate(templateAr, formattedData);

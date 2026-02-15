@@ -205,6 +205,192 @@ router.get('/download/:reference/:language', async (req, res) => {
     }
 });
 
+// PUT /api/documents/:reference - Update document and regenerate files
+router.put('/documents/:reference', async (req, res) => {
+    try {
+        const { reference } = req.params;
+        const { data } = req.body;
+
+        if (!data) {
+            return res.status(400).json({
+                error: 'Missing required field: data'
+            });
+        }
+
+        // Get existing document
+        const existingQuery = 'SELECT * FROM documents WHERE reference = $1';
+        const existingResult = await pool.query(existingQuery, [reference]);
+
+        if (existingResult.rows.length === 0) {
+            return res.status(404).json({
+                error: 'Document not found'
+            });
+        }
+
+        const existingDoc = existingResult.rows[0];
+        const type = existingDoc.document_type;
+
+        // Delete old files
+        const oldPathFr = path.join(__dirname, '..', existingDoc.file_path_fr);
+        const oldPathAr = path.join(__dirname, '..', existingDoc.file_path_ar);
+
+        if (fs.existsSync(oldPathFr)) fs.unlinkSync(oldPathFr);
+        if (fs.existsSync(oldPathAr)) fs.unlinkSync(oldPathAr);
+
+        // Regenerate documents with same reference
+        const { generateDocumentFromTemplate, formatDate } = require('../services/documentGenerator');
+        const TEMPLATES = {
+            particuliers: {
+                fr: path.join(__dirname, '../templates/MODELE Particuliers.docx'),
+                ar: path.join(__dirname, '../templates/MODELE Particuliers AR.docx')
+            },
+            entreprise: {
+                fr: path.join(__dirname, '../templates/MODEL ENTREPRISE.docx'),
+                ar: path.join(__dirname, '../templates/MODEL ENTREPRISE AR.docx')
+            }
+        };
+
+        // Format data
+        const formattedData = {
+            ...data,
+            date: formatDate(data.date),
+            date_delivery: formatDate(data.date_delivery),
+            Date: formatDate(data.Date || data.date),
+            Reference_client: '',
+            contratid: reference
+        };
+
+        if (type === 'entreprise' && data.date_cin_gerant) {
+            formattedData.date_cin_gerant = formatDate(data.date_cin_gerant);
+        }
+
+        if (data.internet_offer) {
+            formattedData.offre_p = type === 'particuliers' ? data.internet_offer : '';
+            formattedData.offre_e = type === 'entreprise' ? data.internet_offer : '';
+        } else {
+            formattedData.offre_p = '';
+            formattedData.offre_e = '';
+        }
+
+        // Generate new documents
+        const PizZip = require('pizzip');
+        const Docxtemplater = require('docxtemplater');
+
+        const generateDoc = (templatePath, data) => {
+            const content = fs.readFileSync(templatePath, 'binary');
+            const zip = new PizZip(content);
+            const doc = new Docxtemplater(zip, {
+                paragraphLoop: true,
+                linebreaks: true,
+            });
+            doc.render(data);
+            return doc.getZip().generate({
+                type: 'nodebuffer',
+                compression: 'DEFLATE',
+            });
+        };
+
+        const docFr = generateDoc(TEMPLATES[type].fr, formattedData);
+        const docAr = generateDoc(TEMPLATES[type].ar, formattedData);
+
+        // Save new files with same paths
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        const outputDir = path.join(__dirname, '../generated', year.toString(), month, day);
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+
+        const filenameFr = `${reference}_fr.docx`;
+        const filenameAr = `${reference}_ar.docx`;
+        const pathFr = path.join(outputDir, filenameFr);
+        const pathAr = path.join(outputDir, filenameAr);
+
+        fs.writeFileSync(pathFr, docFr);
+        fs.writeFileSync(pathAr, docAr);
+
+        const relativePathFr = path.relative(path.join(__dirname, '..'), pathFr);
+        const relativePathAr = path.relative(path.join(__dirname, '..'), pathAr);
+
+        // Update database
+        const updateQuery = `
+            UPDATE documents 
+            SET user_data = $1, file_path_fr = $2, file_path_ar = $3
+            WHERE reference = $4
+            RETURNING *
+        `;
+
+        const result = await pool.query(updateQuery, [
+            JSON.stringify(formattedData),
+            relativePathFr,
+            relativePathAr,
+            reference
+        ]);
+
+        res.json({
+            success: true,
+            document: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Error updating document:', error);
+        res.status(500).json({
+            error: 'Failed to update document',
+            message: error.message
+        });
+    }
+});
+
+// DELETE /api/documents/:reference - Delete document and files
+router.delete('/documents/:reference', async (req, res) => {
+    try {
+        const { reference } = req.params;
+
+        // Get document to find file paths
+        const query = 'SELECT * FROM documents WHERE reference = $1';
+        const result = await pool.query(query, [reference]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: 'Document not found'
+            });
+        }
+
+        const document = result.rows[0];
+
+        // Delete files
+        const pathFr = path.join(__dirname, '..', document.file_path_fr);
+        const pathAr = path.join(__dirname, '..', document.file_path_ar);
+
+        if (fs.existsSync(pathFr)) {
+            fs.unlinkSync(pathFr);
+        }
+
+        if (fs.existsSync(pathAr)) {
+            fs.unlinkSync(pathAr);
+        }
+
+        // Delete from database
+        const deleteQuery = 'DELETE FROM documents WHERE reference = $1';
+        await pool.query(deleteQuery, [reference]);
+
+        res.json({
+            success: true,
+            message: 'Document deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error deleting document:', error);
+        res.status(500).json({
+            error: 'Failed to delete document',
+            message: error.message
+        });
+    }
+});
+
 // GET /api/health - Health check
 router.get('/health', async (req, res) => {
     try {

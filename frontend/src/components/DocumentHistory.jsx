@@ -17,6 +17,11 @@ function DocumentHistory() {
         total: 0
     });
 
+    // Edit/Delete states
+    const [editingDoc, setEditingDoc] = useState(null);
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [actionLoading, setActionLoading] = useState(false);
+
     useEffect(() => {
         fetchDocuments();
     }, [filters, pagination.offset]);
@@ -57,6 +62,28 @@ function DocumentHistory() {
 
     const downloadDocument = (reference, language) => {
         window.open(`/api/download/${reference}/${language}`, '_blank');
+    };
+
+    const handleEdit = async (doc) => {
+        try {
+            const response = await axios.get(`/api/documents/${doc.reference}`);
+            setEditingDoc(response.data.document);
+        } catch (err) {
+            setError('Erreur lors du chargement du document');
+        }
+    };
+
+    const handleDelete = async (reference) => {
+        setActionLoading(true);
+        try {
+            await axios.delete(`/api/documents/${reference}`);
+            setDeleteConfirm(null);
+            fetchDocuments();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Erreur lors de la suppression');
+        } finally {
+            setActionLoading(false);
+        }
     };
 
     const nextPage = () => {
@@ -171,6 +198,20 @@ function DocumentHistory() {
                                                     >
                                                         AR
                                                     </button>
+                                                    <button
+                                                        onClick={() => handleEdit(doc)}
+                                                        className="btn btn-sm btn-edit"
+                                                        title="Modifier"
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setDeleteConfirm(doc.reference)}
+                                                        className="btn btn-sm btn-delete"
+                                                        title="Supprimer"
+                                                    >
+                                                        🗑️
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -202,6 +243,53 @@ function DocumentHistory() {
                         </div>
                     )}
                 </>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm && (
+                <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2>Confirmer la suppression</h2>
+                        <p>Êtes-vous sûr de vouloir supprimer le document <strong>{deleteConfirm}</strong> ?</p>
+                        <p className="warning-text">Cette action est irréversible.</p>
+                        <div className="modal-actions">
+                            <button
+                                onClick={() => setDeleteConfirm(null)}
+                                className="btn btn-secondary"
+                                disabled={actionLoading}
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={() => handleDelete(deleteConfirm)}
+                                className="btn btn-delete"
+                                disabled={actionLoading}
+                            >
+                                {actionLoading ? 'Suppression...' : 'Supprimer'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Modal - Placeholder for now */}
+            {editingDoc && (
+                <div className="modal-overlay" onClick={() => setEditingDoc(null)}>
+                    <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+                        <h2>Modifier le document</h2>
+                        <p>Référence: <strong>{editingDoc.reference}</strong></p>
+                        <p className="info-text">La fonctionnalité d'édition complète sera implémentée prochainement.</p>
+                        <p className="info-text">Pour l'instant, vous pouvez supprimer et recréer le document.</p>
+                        <div className="modal-actions">
+                            <button
+                                onClick={() => setEditingDoc(null)}
+                                className="btn btn-primary"
+                            >
+                                Fermer
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
