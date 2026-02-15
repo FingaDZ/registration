@@ -35,9 +35,8 @@ services:
       DB_NAME: registration
       DB_USER: postgres
       DB_PASSWORD: postgres
-      DOLIBARR_API_URL: ${DOLIBARR_API_URL}
-      DOLIBARR_API_KEY: ${DOLIBARR_API_KEY}
-      DOLIBARR_ENABLED: ${DOLIBARR_ENABLED}
+    env_file:
+      - ./backend/.env
     volumes:
       - ./backend/templates:/app/templates
       - generated-docs:/app/generated
