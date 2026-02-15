@@ -322,6 +322,11 @@ function ParticuliersForm() {
                 <div className="result-section">
                     <div className="alert alert-success">
                         <h3>✓ Documents générés avec succès!</h3>
+                        {result.dolibarrId ? (
+                            <p className="status-success">✓ Client créé dans Dolibarr (ID: {result.dolibarrId})</p>
+                        ) : (
+                            <p className="status-warning">⚠ Inscription Dolibarr échouée (vérifier logs)</p>
+                        )}
                         <p><strong>Référence:</strong> {result.reference}</p>
                         <div className="download-buttons">
                             <button

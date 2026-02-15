@@ -3,6 +3,7 @@ const Docxtemplater = require('docxtemplater');
 const fs = require('fs');
 const path = require('path');
 const { pool } = require('../database/init');
+const dolibarrService = require('./dolibarrService');
 
 // Template paths
 const TEMPLATES = {
@@ -138,9 +139,17 @@ async function generateDocuments(type, data) {
         const relativePathFr = path.relative(path.join(__dirname, '..'), pathFr);
         const relativePathAr = path.relative(path.join(__dirname, '..'), pathAr);
 
+        // Create client in Dolibarr (non-blocking - continues even if it fails)
+        let dolibarrId = null;
+        try {
+            dolibarrId = await dolibarrService.createThirdParty(data, type, reference);
+        } catch (dolibarrError) {
+            console.error('[Dolibarr] Error during third party creation:', dolibarrError.message);
+        }
+
         const query = `
-      INSERT INTO documents (reference, document_type, user_data, file_path_fr, file_path_ar)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO documents (reference, document_type, user_data, file_path_fr, file_path_ar, dolibarr_id)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
 
@@ -149,14 +158,16 @@ async function generateDocuments(type, data) {
             type,
             JSON.stringify(formattedData),
             relativePathFr,
-            relativePathAr
+            relativePathAr,
+            dolibarrId
         ]);
 
         return {
             reference,
             frenchDoc: relativePathFr,
             arabicDoc: relativePathAr,
-            createdAt: result.rows[0].created_at
+            createdAt: result.rows[0].created_at,
+            dolibarrId: dolibarrId
         };
 
     } catch (error) {
