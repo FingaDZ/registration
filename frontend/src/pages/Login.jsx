@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import '../index.css'; // Ensure we have styles
+import '../index.css';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -29,73 +29,130 @@ const Login = () => {
         setIsLoading(false);
     };
 
-    // Inline styles for simplicity, utilizing existing CSS vars where possible
-    const pageStyle = {
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f8fafc',
-        backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)',
-        backgroundSize: '20px 20px'
-    };
-
-    const cardStyle = {
-        background: 'white',
-        padding: '2rem',
-        borderRadius: '12px',
-        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-        width: '100%',
-        maxWidth: '400px',
-        border: '1px solid #e2e8f0'
-    };
-
     return (
-        <div style={pageStyle}>
-            <div style={cardStyle}>
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                    <h1 style={{ color: '#0f172a', fontSize: '1.5rem', fontWeight: 'bold' }}>Connexion</h1>
-                    <p style={{ color: '#64748b', fontSize: '0.875rem' }}>Registration System</p>
+        <div className="app" style={{ justifyContent: 'center', alignItems: 'center', backgroundImage: 'radial-gradient(circle at center, #1e1e1e 0%, #000000 100%)' }}>
+
+            <div style={{
+                background: 'rgba(18, 18, 18, 0.6)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                padding: '3rem',
+                width: '100%',
+                maxWidth: '400px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            }}>
+                <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                    <div style={{
+                        width: '60px',
+                        height: '60px',
+                        margin: '0 auto 1.5rem',
+                        borderRadius: '0px',
+                        overflow: 'hidden',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                    }}>
+                        <img src="/logo.jpg" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <h1 style={{
+                        fontFamily: "'Chakra Petch', sans-serif",
+                        fontSize: '1.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        marginBottom: '0.5rem',
+                        color: 'var(--text-primary)'
+                    }}>
+                        Bienvenue
+                    </h1>
+                    <p style={{ color: 'var(--text-secondary)', function: '0.9rem' }}>Système d'Enregistrement</p>
                 </div>
 
                 {error && (
-                    <div className="status-warning" style={{ marginBottom: '1rem', padding: '0.75rem' }}>
+                    <div style={{
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                        color: '#ef4444',
+                        padding: '0.75rem',
+                        borderRadius: '4px',
+                        marginBottom: '1.5rem',
+                        textAlign: 'center',
+                        fontSize: '0.9rem'
+                    }}>
                         {error}
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label className="form-label" style={{ display: 'block', marginBottom: '0.5rem' }}>Utilisateur</label>
+                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block' }}>
+                            Identifiant
+                        </label>
                         <input
                             type="text"
-                            className="form-input"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
                             autoFocus
+                            style={{
+                                width: '100%',
+                                background: '#000',
+                                border: '1px solid var(--border-color)',
+                                color: 'white',
+                                padding: '0.875rem',
+                                borderRadius: '4px',
+                                outline: 'none'
+                            }}
+                            className="login-input"
                         />
                     </div>
 
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label className="form-label" style={{ display: 'block', marginBottom: '0.5rem' }}>Mot de passe</label>
+                    <div className="form-group" style={{ marginBottom: '2.5rem' }}>
+                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block' }}>
+                            Mot de passe
+                        </label>
                         <input
                             type="password"
-                            className="form-input"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            style={{
+                                width: '100%',
+                                background: '#000',
+                                border: '1px solid var(--border-color)',
+                                color: 'white',
+                                padding: '0.875rem',
+                                borderRadius: '4px',
+                                outline: 'none'
+                            }}
+                            className="login-input"
                         />
                     </div>
 
                     <button
                         type="submit"
-                        className="submit-button"
-                        style={{ width: '100%' }}
                         disabled={isLoading}
+                        style={{
+                            width: '100%',
+                            background: 'var(--primary)',
+                            color: 'black',
+                            border: 'none',
+                            padding: '1rem',
+                            borderRadius: '999px',
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.1em',
+                            cursor: isLoading ? 'wait' : 'pointer',
+                            transition: 'transform 0.2s',
+                            opacity: isLoading ? 0.7 : 1
+                        }}
+                        onMouseOver={(e) => !isLoading && (e.target.style.transform = 'scale(1.02)')}
+                        onMouseOut={(e) => (e.target.style.transform = 'scale(1)')}
                     >
                         {isLoading ? 'Connexion...' : 'Se connecter'}
                     </button>
+
+                    <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.8rem', color: '#52525b' }}>
+                        &copy; 2026 SARL AIRBAND
+                    </div>
                 </form>
             </div>
         </div>

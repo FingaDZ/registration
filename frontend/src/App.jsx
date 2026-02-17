@@ -6,6 +6,8 @@ import FormSelector from './components/FormSelector';
 import ParticuliersForm from './components/ParticuliersForm';
 import EntrepriseForm from './components/EntrepriseForm';
 import DocumentHistory from './components/DocumentHistory';
+import RequireRole from './components/RequireRole';
+import UserManagement from './pages/UserManagement';
 
 function App() {
     return (
@@ -40,7 +42,15 @@ function MainLayout() {
                     </Link>
                     <div className="nav-links">
                         <Link to="/" className="nav-link">Accueil</Link>
-                        <Link to="/history" className="nav-link">Historique</Link>
+
+                        {/* Admin Only Links */}
+                        {user?.role === 'admin' && (
+                            <>
+                                <Link to="/history" className="nav-link">Historique</Link>
+                                <Link to="/users" className="nav-link">Utilisateurs</Link>
+                            </>
+                        )}
+
                         <button onClick={logout} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'inherit' }}>
                             Déconnexion ({user?.username})
                         </button>
@@ -53,7 +63,19 @@ function MainLayout() {
                     <Route path="/" element={<FormSelector />} />
                     <Route path="/particuliers" element={<ParticuliersForm />} />
                     <Route path="/entreprise" element={<EntrepriseForm />} />
-                    <Route path="/history" element={<DocumentHistory />} />
+
+                    {/* Protected Admin Routes */}
+                    <Route path="/history" element={
+                        <RequireRole role="admin">
+                            <DocumentHistory />
+                        </RequireRole>
+                    } />
+
+                    <Route path="/users" element={
+                        <RequireRole role="admin">
+                            <UserManagement />
+                        </RequireRole>
+                    } />
                 </Routes>
             </main>
 

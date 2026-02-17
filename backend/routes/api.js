@@ -5,8 +5,9 @@ const { generateDocuments } = require('../services/documentGenerator');
 const { getFilePath } = require('../services/storageService');
 const path = require('path');
 const fs = require('fs');
+const { requireRole } = require('../middleware/roles');
 
-// POST /api/generate - Generate documents
+// POST /api/generate - Generate documents (Allowed for all users)
 router.post('/generate', async (req, res) => {
     try {
         const { type, data } = req.body;
@@ -41,8 +42,8 @@ router.post('/generate', async (req, res) => {
     }
 });
 
-// GET /api/documents - Get all documents with pagination and filters
-router.get('/documents', async (req, res) => {
+// GET /api/documents - Get all documents with pagination and filters (Admin Only)
+router.get('/documents', requireRole('admin'), async (req, res) => {
     try {
         const {
             type,
@@ -126,8 +127,8 @@ router.get('/documents', async (req, res) => {
     }
 });
 
-// GET /api/documents/:reference - Get specific document by reference
-router.get('/documents/:reference', async (req, res) => {
+// GET /api/documents/:reference - Get specific document by reference (Admin Only)
+router.get('/documents/:reference', requireRole('admin'), async (req, res) => {
     try {
         const { reference } = req.params;
 
@@ -154,7 +155,9 @@ router.get('/documents/:reference', async (req, res) => {
     }
 });
 
-// GET /api/download/:reference/:language - Download document file
+// GET /api/download/:reference/:language - Download document file (Allowed if authenticated)
+// Note: We technically allow this even for Operators so they can download what they just created if needed.
+// If strictly "No History Access", this prevents BROWSING. Direct link access is usually acceptable for "Impression".
 router.get('/download/:reference/:language', async (req, res) => {
     try {
         const { reference, language } = req.params;
@@ -205,8 +208,8 @@ router.get('/download/:reference/:language', async (req, res) => {
     }
 });
 
-// PUT /api/documents/:reference - Update document and regenerate files
-router.put('/documents/:reference', async (req, res) => {
+// PUT /api/documents/:reference - Update document and regenerate files (Admin Only)
+router.put('/documents/:reference', requireRole('admin'), async (req, res) => {
     try {
         const { reference } = req.params;
         const { data } = req.body;
@@ -344,8 +347,8 @@ router.put('/documents/:reference', async (req, res) => {
     }
 });
 
-// DELETE /api/documents/:reference - Delete document and files
-router.delete('/documents/:reference', async (req, res) => {
+// DELETE /api/documents/:reference - Delete document and files (Admin Only)
+router.delete('/documents/:reference', requireRole('admin'), async (req, res) => {
     try {
         const { reference } = req.params;
 
@@ -419,8 +422,8 @@ router.get('/config/models', async (req, res) => {
     }
 });
 
-// POST /api/config/models
-router.post('/config/models', async (req, res) => {
+// POST /api/config/models (Admin Only)
+router.post('/config/models', requireRole('admin'), async (req, res) => {
     try {
         const { name } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });
@@ -445,8 +448,8 @@ router.get('/config/offers', async (req, res) => {
     }
 });
 
-// POST /api/config/offers
-router.post('/config/offers', async (req, res) => {
+// POST /api/config/offers (Admin Only)
+router.post('/config/offers', requireRole('admin'), async (req, res) => {
     try {
         const { name } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });

@@ -29,11 +29,26 @@ app.use('/api/auth', authRoutes);
 
 // Protected API Routes
 const { verifyToken } = require('./middleware/auth');
+const { requireRole } = require('./middleware/roles');
+const userRoutes = require('./routes/users');
+
 // Health check should be public for Docker/Monitoring?
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Protect all other API routes
-app.use('/api', verifyToken, apiRoutes);
+app.use('/api', verifyToken);
+
+// Admin Routes
+app.use('/api/users', userRoutes); // Protected by requireRole('admin') inside the router
+
+// General API routes (Apply role checks inside routes or here)
+// Protect History: Only Admin can view history?
+// User said: "Opérateur: pas accès a l'historique"
+// So we apply middleware to specific paths if possible, or inside apiRoutes.
+// Since apiRoutes is a router, we can't easily split it here without reading it.
+// Assuming apiRoutes handles /history, /generate, etc.
+// I will check api.js content to see how to protect /history specifically.
+app.use('/api', apiRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
