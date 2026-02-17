@@ -3,20 +3,37 @@ const cors = require('cors');
 const path = require('path');
 const { initializeDatabase, closeDatabaseConnection } = require('./database/init');
 const apiRoutes = require('./routes/api');
+const { ipFilter, deviceFilter, helmet, limiter } = require('./middleware/security');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(helmet());
+app.use(process.env.NODE_ENV === 'production' ? limiter : (req, res, next) => next());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Security Filters (IP & Device)
+app.use(ipFilter);
+app.use(deviceFilter);
+
 // Static files for generated documents
+// Protected static files? Maybe. For now allow, but user needs token to get path usually.
 app.use('/files', express.static(path.join(__dirname, 'generated')));
 
-// API routes
-app.use('/api', apiRoutes);
+// Authentication Routes (Public)
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
+// Protected API Routes
+const { verifyToken } = require('./middleware/auth');
+// Health check should be public for Docker/Monitoring?
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+// Protect all other API routes
+app.use('/api', verifyToken, apiRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
