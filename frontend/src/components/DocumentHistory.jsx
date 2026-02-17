@@ -61,7 +61,8 @@ function DocumentHistory() {
     };
 
     const downloadDocument = (reference, language) => {
-        window.open(`/api/download/${reference}/${language}`, '_blank');
+        const token = localStorage.getItem('token');
+        window.open(`/api/download/${reference}/${language}?token=${token}`, '_blank');
     };
 
     const handleEdit = async (doc) => {

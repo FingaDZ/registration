@@ -20,8 +20,18 @@ const generateToken = (user) => {
  * Middleware to verify JWT token
  */
 const verifyToken = (req, res, next) => {
+    let token;
+
+    // Check header
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+    }
+
+    // Check query param (fallback for downloads/images)
+    if (!token && req.query.token) {
+        token = req.query.token;
+    }
 
     if (!token) {
         return res.status(401).json({ error: 'Access denied: No token provided' });
@@ -32,7 +42,7 @@ const verifyToken = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (err) {
-        res.status(403).json({ error: 'Access denied: Invalid token' });
+        return res.status(403).json({ error: 'Access denied: Invalid token' });
     }
 };
 
