@@ -93,7 +93,7 @@ function mapParticuliersToDolibarr(data) {
         fournisseur: '0',
         typent_code: 'TE_PRIVATE',
         status: '1',
-        idprof1: data.Num_CIN || '',  // CIN stored in structured field (ProfId1DZ)
+        idprof5: data.Num_CIN || '',  // CIN stored in idprof5 (free field, idprof1 is reserved for RC)
         note_private: [
             `Autorité: ${data.authority || ''}`,
             `Date livraison CIN: ${data.date_delivery || ''}`,
@@ -164,15 +164,15 @@ function mapEntrepriseToDolibarr(data) {
 async function searchThirdPartyByCIN(cin) {
     if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !cin) return null;
     try {
-        // Search by idprof1 (ProfId1DZ) which stores the CIN as a structured field
-        const encoded = encodeURIComponent(`(t.idprof1:=:'${cin}')`);
+        // Search by idprof5 which stores the CIN (idprof1 is reserved for RC - Registre de Commerce)
+        const encoded = encodeURIComponent(`(t.idprof5:=:'${cin}')`);
         const results = await dolibarrRequest('GET', `/thirdparties?sqlfilters=${encoded}&limit=5`);
         if (Array.isArray(results) && results.length > 0) {
             return results[0];
         }
         return null;
     } catch (error) {
-        console.error(`[Dolibarr] Search by CIN (idprof1) failed: ${error.message}`);
+        console.error(`[Dolibarr] Search by CIN (idprof5) failed: ${error.message}`);
         return null;
     }
 }
