@@ -163,12 +163,16 @@ function mapEntrepriseToDolibarr(data) {
 async function searchThirdPartyByCIN(cin) {
     if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !cin) return null;
     try {
-        // Use direct idprof5 query parameter (native Dolibarr API, works on all versions)
         const encoded = encodeURIComponent(cin);
-        const results = await dolibarrRequest('GET', `/thirdparties?idprof5=${encoded}&limit=5`);
+        const results = await dolibarrRequest('GET', `/thirdparties?idprof5=${encoded}&limit=20`);
         if (Array.isArray(results) && results.length > 0) {
-            console.log(`[Dolibarr] CIN match found: ${results[0].name}`);
-            return results[0];
+            // Dolibarr does partial matching — verify exact idprof5 match
+            const exact = results.find(r => r.idprof5 && r.idprof5.trim() === cin.trim());
+            if (exact) {
+                console.log(`[Dolibarr] CIN exact match found: ${exact.name} (idprof5: ${exact.idprof5})`);
+                return exact;
+            }
+            console.log(`[Dolibarr] CIN partial matches found but no exact match for: ${cin}`);
         }
         return null;
     } catch (error) {
@@ -209,12 +213,16 @@ async function searchThirdPartyByName(name) {
 async function searchThirdPartyByNIF(nif, raisonSociale) {
     if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !nif) return null;
     try {
-        // Use direct idprof2 query parameter (native Dolibarr API, works on all versions)
         const encoded = encodeURIComponent(nif);
-        const results = await dolibarrRequest('GET', `/thirdparties?idprof2=${encoded}&limit=5`);
+        const results = await dolibarrRequest('GET', `/thirdparties?idprof2=${encoded}&limit=20`);
         if (Array.isArray(results) && results.length > 0) {
-            console.log(`[Dolibarr] NIF match found: ${results[0].name}`);
-            return results[0];
+            // Dolibarr does partial matching — verify exact idprof2 match
+            const exact = results.find(r => r.idprof2 && r.idprof2.trim() === nif.trim());
+            if (exact) {
+                console.log(`[Dolibarr] NIF exact match found: ${exact.name} (idprof2: ${exact.idprof2})`);
+                return exact;
+            }
+            console.log(`[Dolibarr] NIF partial matches found but no exact match for: ${nif}`);
         }
         return null;
     } catch (error) {
