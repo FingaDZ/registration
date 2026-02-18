@@ -198,8 +198,8 @@ router.get('/documents', requireRole('admin'), async (req, res) => {
     }
 });
 
-// GET /api/documents/:reference - Get specific document by reference (Admin Only)
-router.get('/documents/:reference', requireRole('admin'), async (req, res) => {
+// GET /api/documents/:reference - Get specific document by reference (Admin + Operator)
+router.get('/documents/:reference', requireRole(['admin', 'operator']), async (req, res) => {
     try {
         const { reference } = req.params;
 
@@ -279,8 +279,8 @@ router.get('/download/:reference/:language', async (req, res) => {
     }
 });
 
-// PUT /api/documents/:reference - Update document and regenerate files (Admin Only)
-router.put('/documents/:reference', requireRole('admin'), async (req, res) => {
+// PUT /api/documents/:reference - Update document and regenerate files (Admin + Operator)
+router.put('/documents/:reference', requireRole(['admin', 'operator']), async (req, res) => {
     try {
         const { reference } = req.params;
         const { data } = req.body;
