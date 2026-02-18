@@ -40,25 +40,35 @@ function formatDate(dateString) {
 // Generate document from template
 function generateDocumentFromTemplate(templatePath, data) {
     try {
-        // Load template
         const content = fs.readFileSync(templatePath, 'binary');
         const zip = new PizZip(content);
         const doc = new Docxtemplater(zip, {
             paragraphLoop: true,
             linebreaks: true,
+            // Return empty string for any missing/unknown tag instead of throwing
+            nullGetter(part) {
+                if (!part.module) {
+                    return '';
+                }
+                return '';
+            }
         });
 
-        // Replace placeholders with data
         doc.render(data);
 
-        // Generate buffer
-        const buffer = doc.getZip().generate({
+        return doc.getZip().generate({
             type: 'nodebuffer',
             compression: 'DEFLATE',
         });
-
-        return buffer;
     } catch (error) {
+        // Extract useful info from docxtemplater errors
+        if (error.properties && error.properties.errors) {
+            const details = error.properties.errors
+                .map(e => e.properties?.explanation || e.message)
+                .join('; ');
+            console.error(`[Template] Error in ${path.basename(templatePath)}: ${details}`);
+            throw new Error(`Erreur template "${path.basename(templatePath)}": ${details}`);
+        }
         console.error('Error generating document:', error);
         throw new Error(`Document generation failed: ${error.message}`);
     }
@@ -86,26 +96,13 @@ async function generateDocuments(type, data) {
         // Generate reference
         const reference = generateReference();
 
-        // Create client in Dolibarr FIRST to get the code_client for the document
-        let dolibarrResult = null;
-        let referenceClient = '';
-        try {
-            dolibarrResult = await dolibarrService.createThirdParty(data, type, reference);
-            if (dolibarrResult && dolibarrResult.code_client) {
-                referenceClient = dolibarrResult.code_client;
-                console.log(`[Generator] Using Dolibarr code_client: ${referenceClient}`);
-            }
-        } catch (dolibarrError) {
-            console.error('[Dolibarr] Error during third party creation:', dolibarrError.message);
-        }
-
-        // Format dates to DD-MM-YYYY
+        // Build formattedData FIRST (needed for template validation)
         const formattedData = {
             ...data,
             date: formatDate(data.date),
             date_delivery: formatDate(data.date_delivery),
             Date: formatDate(data.Date || data.date),
-            Reference_client: referenceClient // Filled with Dolibarr code_client if available
+            Reference_client: '' // Will be filled after Dolibarr creation
         };
 
         if (type === 'entreprise' && data.date_cin_gerant) {
@@ -124,7 +121,29 @@ async function generateDocuments(type, data) {
         // Map contract ID to the auto-generated reference
         formattedData.contratid = reference;
 
-        // Generate both documents
+        // --- Validate templates BEFORE calling Dolibarr ---
+        // If template has syntax errors, stop here — don't create orphaned Dolibarr entry
+        try {
+            generateDocumentFromTemplate(templateFr, formattedData);
+            generateDocumentFromTemplate(templateAr, formattedData);
+        } catch (templateError) {
+            console.error('[Generator] Template validation failed:', templateError.message);
+            throw templateError;
+        }
+
+        // Create client in Dolibarr to get the code_client for the document
+        let dolibarrResult = null;
+        try {
+            dolibarrResult = await dolibarrService.createThirdParty(data, type, reference);
+            if (dolibarrResult && dolibarrResult.code_client) {
+                formattedData.Reference_client = dolibarrResult.code_client;
+                console.log(`[Generator] Using Dolibarr code_client: ${dolibarrResult.code_client}`);
+            }
+        } catch (dolibarrError) {
+            console.error('[Dolibarr] Error during third party creation:', dolibarrError.message);
+        }
+
+        // Generate final documents (with Reference_client now filled)
         const docFr = generateDocumentFromTemplate(templateFr, formattedData);
         const docAr = generateDocumentFromTemplate(templateAr, formattedData);
 
