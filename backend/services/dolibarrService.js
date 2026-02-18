@@ -163,7 +163,7 @@ function mapEntrepriseToDolibarr(data) {
 async function searchThirdPartyByCIN(cin) {
     if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !cin) return null;
     try {
-        // Search by idprof5 which stores the CIN (idprof1 is reserved for RC - Registre de Commerce)
+        // Use sqlfilters on idprof5 (stored CIN field)
         const encoded = encodeURIComponent(`(t.idprof5:=:'${cin}')`);
         const results = await dolibarrRequest('GET', `/thirdparties?sqlfilters=${encoded}&limit=5`);
         if (Array.isArray(results) && results.length > 0) {
@@ -171,7 +171,8 @@ async function searchThirdPartyByCIN(cin) {
         }
         return null;
     } catch (error) {
-        console.error(`[Dolibarr] Search by CIN (idprof5) failed: ${error.message}`);
+        // Fallback: search by name if sqlfilters not supported
+        console.warn(`[Dolibarr] sqlfilters CIN search failed (${error.message}), skipping duplicate check`);
         return null;
     }
 }
@@ -184,6 +185,7 @@ async function searchThirdPartyByCIN(cin) {
 async function searchThirdPartyByNIF(nif) {
     if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !nif) return null;
     try {
+        // Use sqlfilters on idprof2 (NIF field)
         const encoded = encodeURIComponent(`(t.idprof2:=:'${nif}')`);
         const results = await dolibarrRequest('GET', `/thirdparties?sqlfilters=${encoded}&limit=5`);
         if (Array.isArray(results) && results.length > 0) {
@@ -191,7 +193,8 @@ async function searchThirdPartyByNIF(nif) {
         }
         return null;
     } catch (error) {
-        console.error(`[Dolibarr] Search by NIF failed: ${error.message}`);
+        // sqlfilters may not be supported on this Dolibarr version — skip silently
+        console.warn(`[Dolibarr] sqlfilters NIF search failed (${error.message}), skipping duplicate check`);
         return null;
     }
 }

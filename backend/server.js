@@ -8,6 +8,9 @@ const { ipFilter, deviceFilter, helmet, limiter } = require('./middleware/securi
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy (needed when behind Nginx/Docker - fixes rate-limit X-Forwarded-For error)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet());
 app.use(process.env.NODE_ENV === 'production' ? limiter : (req, res, next) => next());
