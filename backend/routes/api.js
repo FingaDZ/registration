@@ -6,6 +6,69 @@ const { getFilePath } = require('../services/storageService');
 const path = require('path');
 const fs = require('fs');
 const { requireRole } = require('../middleware/roles');
+const { searchThirdPartyByCIN, searchThirdPartyByNIF } = require('../services/dolibarrService');
+
+// POST /api/check-duplicate - Check for duplicate clients before generation
+router.post('/check-duplicate', async (req, res) => {
+    try {
+        const { type, data } = req.body;
+        if (!type || !data) {
+            return res.status(400).json({ error: 'Missing type or data' });
+        }
+
+        let dolibarrMatch = null;
+        let localMatches = [];
+
+        // --- Dolibarr check ---
+        try {
+            if (type === 'particuliers' && data.Num_CIN) {
+                dolibarrMatch = await searchThirdPartyByCIN(data.Num_CIN);
+            } else if (type === 'entreprise' && data.nif) {
+                dolibarrMatch = await searchThirdPartyByNIF(data.nif);
+            }
+        } catch (e) {
+            console.warn('[check-duplicate] Dolibarr search failed:', e.message);
+        }
+
+        // --- Local DB check ---
+        try {
+            let dbQuery, dbParams;
+            if (type === 'particuliers' && data.Num_CIN) {
+                dbQuery = `SELECT reference, document_type, created_at, user_data->>'Nom' as nom, user_data->>'Prenom' as prenom
+                           FROM documents WHERE user_data->>'Num_CIN' = $1 ORDER BY created_at DESC LIMIT 5`;
+                dbParams = [data.Num_CIN];
+            } else if (type === 'entreprise' && data.nif) {
+                dbQuery = `SELECT reference, document_type, created_at, user_data->>'raison_sociale' as nom
+                           FROM documents WHERE user_data->>'nif' = $1 ORDER BY created_at DESC LIMIT 5`;
+                dbParams = [data.nif];
+            }
+            if (dbQuery) {
+                const result = await pool.query(dbQuery, dbParams);
+                localMatches = result.rows;
+            }
+        } catch (e) {
+            console.warn('[check-duplicate] DB search failed:', e.message);
+        }
+
+        const isDuplicate = !!dolibarrMatch || localMatches.length > 0;
+
+        return res.json({
+            isDuplicate,
+            existingClient: dolibarrMatch ? {
+                id: dolibarrMatch.id,
+                name: dolibarrMatch.name,
+                code_client: dolibarrMatch.code_client,
+                email: dolibarrMatch.email,
+                phone: dolibarrMatch.phone_mobile
+            } : null,
+            existingDocuments: localMatches
+        });
+
+    } catch (error) {
+        console.error('[check-duplicate] Error:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 // POST /api/generate - Generate documents (Allowed for all users)
 router.post('/generate', async (req, res) => {

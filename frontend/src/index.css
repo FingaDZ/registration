@@ -761,6 +761,49 @@ h1 {
   margin-top: 2rem;
 }
 
+.warning-text {
+  color: #f59e0b;
+  font-weight: 600;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+}
+
+.duplicate-info {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.duplicate-info p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.duplicate-docs {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.duplicate-docs ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.duplicate-docs li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

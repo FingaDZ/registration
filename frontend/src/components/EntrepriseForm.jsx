@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DynamicSelect from './DynamicSelect';
+import { format } from 'date-fns';
 
 function EntrepriseForm() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
+    const [duplicateWarning, setDuplicateWarning] = useState(null);
 
     // Dynamic Data States
     const [cpeModels, setCpeModels] = useState([]);
@@ -75,11 +77,25 @@ function EntrepriseForm() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e, force = false) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         setResult(null);
+
+        // Check for duplicates first (unless forced)
+        if (!force) {
+            try {
+                const dupRes = await axios.post('/api/check-duplicate', { type: 'entreprise', data: formData });
+                if (dupRes.data.isDuplicate) {
+                    setDuplicateWarning(dupRes.data);
+                    setLoading(false);
+                    return;
+                }
+            } catch (dupErr) {
+                console.warn('Duplicate check failed (non-blocking):', dupErr.message);
+            }
+        }
 
         try {
             const response = await axios.post('/api/generate', {
@@ -88,6 +104,7 @@ function EntrepriseForm() {
             });
 
             setResult(response.data);
+            setDuplicateWarning(null);
             setTimeout(() => {
                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             }, 100);
@@ -96,6 +113,10 @@ function EntrepriseForm() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleForceSubmit = () => {
+        handleSubmit({ preventDefault: () => { } }, true);
     };
 
     const downloadDocument = (reference, language) => {
@@ -107,12 +128,43 @@ function EntrepriseForm() {
         <div className="form-container">
             <div className="form-header">
                 <button onClick={() => navigate('/')} className="btn-back">← Retour</button>
-
-
-
                 <h1>Formulaire Entreprise</h1>
                 <p>Remplissez les informations de l'entreprise et du gérant.</p>
             </div>
+
+            {/* Duplicate Warning Modal */}
+            {duplicateWarning && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>⚠️ Entreprise déjà enregistrée</h2>
+                        {duplicateWarning.existingClient && (
+                            <div className="duplicate-info">
+                                <p><strong>Dolibarr :</strong> {duplicateWarning.existingClient.name} ({duplicateWarning.existingClient.code_client})</p>
+                                {duplicateWarning.existingClient.email && <p>Email: {duplicateWarning.existingClient.email}</p>}
+                            </div>
+                        )}
+                        {duplicateWarning.existingDocuments?.length > 0 && (
+                            <div className="duplicate-docs">
+                                <p><strong>Documents existants :</strong></p>
+                                <ul>
+                                    {duplicateWarning.existingDocuments.map(doc => (
+                                        <li key={doc.reference}>
+                                            {doc.reference} — {doc.nom} — {format(new Date(doc.created_at), 'dd/MM/yyyy')}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        <p className="warning-text">Cette entreprise semble déjà exister. Voulez-vous continuer quand même (ex: renouvellement) ?</p>
+                        <div className="modal-actions">
+                            <button onClick={() => setDuplicateWarning(null)} className="btn btn-secondary">Annuler</button>
+                            <button onClick={handleForceSubmit} className="btn btn-primary" disabled={loading}>
+                                {loading ? 'Génération...' : 'Continuer quand même'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {error && (
                 <div className="alert alert-error">

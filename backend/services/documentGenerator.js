@@ -86,13 +86,26 @@ async function generateDocuments(type, data) {
         // Generate reference
         const reference = generateReference();
 
+        // Create client in Dolibarr FIRST to get the code_client for the document
+        let dolibarrResult = null;
+        let referenceClient = '';
+        try {
+            dolibarrResult = await dolibarrService.createThirdParty(data, type, reference);
+            if (dolibarrResult && dolibarrResult.code_client) {
+                referenceClient = dolibarrResult.code_client;
+                console.log(`[Generator] Using Dolibarr code_client: ${referenceClient}`);
+            }
+        } catch (dolibarrError) {
+            console.error('[Dolibarr] Error during third party creation:', dolibarrError.message);
+        }
+
         // Format dates to DD-MM-YYYY
         const formattedData = {
             ...data,
             date: formatDate(data.date),
             date_delivery: formatDate(data.date_delivery),
             Date: formatDate(data.Date || data.date),
-            Reference_client: '' // Leave empty as requested
+            Reference_client: referenceClient // Filled with Dolibarr code_client if available
         };
 
         if (type === 'entreprise' && data.date_cin_gerant) {
@@ -139,13 +152,7 @@ async function generateDocuments(type, data) {
         const relativePathFr = path.relative(path.join(__dirname, '..'), pathFr);
         const relativePathAr = path.relative(path.join(__dirname, '..'), pathAr);
 
-        // Create client in Dolibarr (non-blocking - continues even if it fails)
-        let dolibarrId = null;
-        try {
-            dolibarrId = await dolibarrService.createThirdParty(data, type, reference);
-        } catch (dolibarrError) {
-            console.error('[Dolibarr] Error during third party creation:', dolibarrError.message);
-        }
+        const dolibarrId = dolibarrResult ? dolibarrResult.id : null;
 
         const query = `
       INSERT INTO documents (reference, document_type, user_data, file_path_fr, file_path_ar, dolibarr_id)

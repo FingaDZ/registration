@@ -156,6 +156,53 @@ function mapEntrepriseToDolibarr(data) {
  * @param {string} reference - The document reference number
  * @returns {Promise<number|null>} - The Dolibarr third party ID, or null if disabled/failed
  */
+/**
+ * Search for an existing third party by CIN number (Particuliers)
+ * @param {string} cin - The CIN number to search for
+ * @returns {Promise<Object|null>} - The found third party or null
+ */
+async function searchThirdPartyByCIN(cin) {
+    if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !cin) return null;
+    try {
+        const encoded = encodeURIComponent(`(t.note_private:like:'%CIN: ${cin}%')`);
+        const results = await dolibarrRequest('GET', `/thirdparties?sqlfilters=${encoded}&limit=5`);
+        if (Array.isArray(results) && results.length > 0) {
+            return results[0];
+        }
+        return null;
+    } catch (error) {
+        console.error(`[Dolibarr] Search by CIN failed: ${error.message}`);
+        return null;
+    }
+}
+
+/**
+ * Search for an existing third party by NIF (Entreprise)
+ * @param {string} nif - The NIF number to search for
+ * @returns {Promise<Object|null>} - The found third party or null
+ */
+async function searchThirdPartyByNIF(nif) {
+    if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !nif) return null;
+    try {
+        const encoded = encodeURIComponent(`(t.idprof2:=:'${nif}')`);
+        const results = await dolibarrRequest('GET', `/thirdparties?sqlfilters=${encoded}&limit=5`);
+        if (Array.isArray(results) && results.length > 0) {
+            return results[0];
+        }
+        return null;
+    } catch (error) {
+        console.error(`[Dolibarr] Search by NIF failed: ${error.message}`);
+        return null;
+    }
+}
+
+/**
+ * Create a new third party (client) in Dolibarr
+ * @param {Object} formData - The form data submitted by the user
+ * @param {string} clientType - 'particuliers' or 'entreprise'
+ * @param {string} reference - The document reference number
+ * @returns {Promise<{id: number, code_client: string}|null>} - The Dolibarr ID and client code, or null
+ */
 async function createThirdParty(formData, clientType, reference) {
     if (!DOLIBARR_ENABLED) {
         console.log('[Dolibarr] Integration disabled - skipping client creation');
@@ -181,11 +228,20 @@ async function createThirdParty(formData, clientType, reference) {
 
         console.log(`[Dolibarr] Creating third party for ${clientType}: ${dolibarrData.name}`);
 
-        // Call Dolibarr API to create the third party
+        // Call Dolibarr API to create the third party - returns the new ID
         const thirdPartyId = await dolibarrRequest('POST', '/thirdparties', dolibarrData);
 
-        console.log(`[Dolibarr] ✅ Third party created successfully (ID: ${thirdPartyId})`);
-        return thirdPartyId;
+        // Fetch the full record to get the auto-generated code_client
+        let code_client = null;
+        try {
+            const fullRecord = await dolibarrRequest('GET', `/thirdparties/${thirdPartyId}`);
+            code_client = fullRecord.code_client || null;
+        } catch (fetchErr) {
+            console.warn(`[Dolibarr] Could not fetch code_client: ${fetchErr.message}`);
+        }
+
+        console.log(`[Dolibarr] ✅ Third party created (ID: ${thirdPartyId}, code: ${code_client})`);
+        return { id: thirdPartyId, code_client };
 
     } catch (error) {
         console.error(`[Dolibarr] ❌ Failed to create third party: ${error.message}`);
@@ -211,6 +267,8 @@ async function checkConnection() {
 
 module.exports = {
     createThirdParty,
+    searchThirdPartyByCIN,
+    searchThirdPartyByNIF,
     checkConnection,
     DOLIBARR_ENABLED
 };
