@@ -114,16 +114,19 @@ function mapEntrepriseToDolibarr(data) {
     return {
         name: data.raison_sociale || '',
         name_alias: data.raison_sociale || '',
+        firstname: data.Prenom || '', // Prénom du gérant
+        lastname: data.Nom || '',     // Nom du gérant
         email: data.mail || '',
         phone_mobile: data.mobile_gerant || '',
         address: data.Adresse_entreprise || '',
         town: data.place || '',
         country_code: 'DZ',
-        idprof1: data.rc || '',      // RC  (ProfId1DZ=RC)
-        idprof2: data.nif || '',     // NIF (ProfId2DZ=NIF)
-        idprof3: data.article || '', // AI  (ProfId3DZ=AI)
-        idprof4: data.nis || '',     // NIS (ProfId4DZ=NIS)
-        // idprof5 reserved for CIN on Particuliers (ProfId5DZ=CIN)
+        idprof1: data.rc || '',                    // RC           (ProfId1DZ=RC)
+        idprof2: data.nif || '',                   // NIF          (ProfId2DZ=NIF)
+        idprof3: data.article || '',               // AI           (ProfId3DZ=AI)
+        idprof4: data.nis || '',                   // NIS          (ProfId4DZ=NIS)
+        idprof5: data.numero_cin_gerant || '',     // CIN Gérant   (ProfId5DZ=CIN)
+        idprof6: data.date_cin_gerant || '',       // Date CIN Gér (ProfId6DZ=DATE CIN)
         client: '1',
         code_client: '-1',
         fournisseur: '0',
@@ -135,8 +138,6 @@ function mapEntrepriseToDolibarr(data) {
         fk_account: '1',
         note_private: [
             `Gérant: ${data.Prenom || ''} ${data.Nom || ''}`,
-            `CIN Gérant: ${data.numero_cin_gerant || ''}`,
-            `Date CIN: ${data.date_cin_gerant || ''}`,
             `Autorité CIN: ${data.authority_gerant || ''}`,
             `Adresse installation: ${data.Adresse || ''}`,
             `CPE: ${data.cpe_model || ''} (S/N: ${data.cpe_serial || ''})`,
