@@ -93,10 +93,10 @@ function mapParticuliersToDolibarr(data) {
         fournisseur: '0',
         typent_code: 'TE_PRIVATE',
         status: '1',
-        idprof5: data.Num_CIN || '',  // CIN (ProfId5DZ=CIN - configured in Dolibarr)
+        idprof5: data.Num_CIN || '',       // CIN         (ProfId5DZ=CIN)
+        idprof6: data.date_delivery || '', // Date CIN    (ProfId6DZ=DATE CIN)
         note_private: [
             `Autorité: ${data.authority || ''}`,
-            `Date livraison CIN: ${data.date_delivery || ''}`,
             `CPE: ${data.cpe_model || ''} (S/N: ${data.cpe_serial || ''})`,
             `Offre: ${data.internet_offer || ''}`,
             `Coordonnées: ${data.latitude || ''}, ${data.longitude || ''}`,
