@@ -163,16 +163,39 @@ function mapEntrepriseToDolibarr(data) {
 async function searchThirdPartyByCIN(cin) {
     if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !cin) return null;
     try {
-        // Use sqlfilters on idprof5 (stored CIN field)
-        const encoded = encodeURIComponent(`(t.idprof5:=:'${cin}')`);
+        // Dolibarr 22.x: thirdparties table alias is 's' in sqlfilters
+        const encoded = encodeURIComponent(`(s.idprof5:=:'${cin}')`);
         const results = await dolibarrRequest('GET', `/thirdparties?sqlfilters=${encoded}&limit=5`);
         if (Array.isArray(results) && results.length > 0) {
             return results[0];
         }
         return null;
     } catch (error) {
-        // Fallback: search by name if sqlfilters not supported
-        console.warn(`[Dolibarr] sqlfilters CIN search failed (${error.message}), skipping duplicate check`);
+        console.warn(`[Dolibarr] CIN sqlfilters failed: ${error.message}`);
+        return null;
+    }
+}
+
+/**
+ * Search for an existing third party by company name (fallback for NIF search)
+ * @param {string} name - The company name to search for
+ * @returns {Promise<Object|null>} - The found third party or null
+ */
+async function searchThirdPartyByName(name) {
+    if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !name) return null;
+    try {
+        const encoded = encodeURIComponent(name);
+        const results = await dolibarrRequest('GET', `/thirdparties?name=${encoded}&limit=5`);
+        if (Array.isArray(results) && results.length > 0) {
+            // Verify exact match (API may return partial matches)
+            const exact = results.find(r =>
+                r.name && r.name.toLowerCase() === name.toLowerCase()
+            );
+            return exact || results[0];
+        }
+        return null;
+    } catch (error) {
+        console.warn(`[Dolibarr] Name search failed: ${error.message}`);
         return null;
     }
 }
@@ -182,19 +205,22 @@ async function searchThirdPartyByCIN(cin) {
  * @param {string} nif - The NIF number to search for
  * @returns {Promise<Object|null>} - The found third party or null
  */
-async function searchThirdPartyByNIF(nif) {
+async function searchThirdPartyByNIF(nif, raisonSociale) {
     if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !nif) return null;
     try {
-        // Use sqlfilters on idprof2 (NIF field)
-        const encoded = encodeURIComponent(`(t.idprof2:=:'${nif}')`);
+        // Dolibarr 22.x: thirdparties table alias is 's' in sqlfilters
+        const encoded = encodeURIComponent(`(s.idprof2:=:'${nif}')`);
         const results = await dolibarrRequest('GET', `/thirdparties?sqlfilters=${encoded}&limit=5`);
         if (Array.isArray(results) && results.length > 0) {
             return results[0];
         }
         return null;
     } catch (error) {
-        // sqlfilters may not be supported on this Dolibarr version — skip silently
-        console.warn(`[Dolibarr] sqlfilters NIF search failed (${error.message}), skipping duplicate check`);
+        console.warn(`[Dolibarr] NIF sqlfilters failed (${error.message}), trying name search...`);
+        // Fallback: search by company name
+        if (raisonSociale) {
+            return await searchThirdPartyByName(raisonSociale);
+        }
         return null;
     }
 }
@@ -272,6 +298,7 @@ module.exports = {
     createThirdParty,
     searchThirdPartyByCIN,
     searchThirdPartyByNIF,
+    searchThirdPartyByName,
     checkConnection,
     DOLIBARR_ENABLED
 };

@@ -24,7 +24,7 @@ router.post('/check-duplicate', async (req, res) => {
             if (type === 'particuliers' && data.Num_CIN) {
                 dolibarrMatch = await searchThirdPartyByCIN(data.Num_CIN);
             } else if (type === 'entreprise' && data.nif) {
-                dolibarrMatch = await searchThirdPartyByNIF(data.nif);
+                dolibarrMatch = await searchThirdPartyByNIF(data.nif, data.raison_sociale);
             }
         } catch (e) {
             console.warn('[check-duplicate] Dolibarr search failed:', e.message);
