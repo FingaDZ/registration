@@ -88,6 +88,14 @@ router.post('/generate', async (req, res) => {
             });
         }
 
+        // Validate CPE fields (mandatory)
+        if (!data.cpe_model || !data.cpe_model.trim()) {
+            return res.status(400).json({ error: 'Le modèle CPE est obligatoire.' });
+        }
+        if (!data.cpe_serial || !data.cpe_serial.trim()) {
+            return res.status(400).json({ error: 'Le numéro de série CPE est obligatoire.' });
+        }
+
         // Generate documents
         const result = await generateDocuments(type, data);
 
@@ -281,6 +289,14 @@ router.put('/documents/:reference', requireRole('admin'), async (req, res) => {
             return res.status(400).json({
                 error: 'Missing required field: data'
             });
+        }
+
+        // Validate CPE fields (mandatory)
+        if (!data.cpe_model || !data.cpe_model.trim()) {
+            return res.status(400).json({ error: 'Le modèle CPE est obligatoire.' });
+        }
+        if (!data.cpe_serial || !data.cpe_serial.trim()) {
+            return res.status(400).json({ error: 'Le numéro de série CPE est obligatoire.' });
         }
 
         // Get existing document
