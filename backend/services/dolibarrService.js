@@ -88,13 +88,13 @@ function mapParticuliersToDolibarr(data) {
         address: data.Adresse || '',
         town: data.place || '',
         country_code: 'DZ',
-        client: '1',           // Mark as customer
-        code_client: '-1',     // Auto-generate client code
-        fournisseur: '0',      // Not a supplier
-        typent_code: 'TE_PRIVATE', // Individual type
-        status: '1',           // Active
+        client: '1',
+        code_client: '-1',
+        fournisseur: '0',
+        typent_code: 'TE_PRIVATE',
+        status: '1',
+        idprof1: data.Num_CIN || '',  // CIN stored in structured field (ProfId1DZ)
         note_private: [
-            `CIN: ${data.Num_CIN || ''}`,
             `Autorité: ${data.authority || ''}`,
             `Date livraison CIN: ${data.date_delivery || ''}`,
             `CPE: ${data.cpe_model || ''} (S/N: ${data.cpe_serial || ''})`,
@@ -164,14 +164,15 @@ function mapEntrepriseToDolibarr(data) {
 async function searchThirdPartyByCIN(cin) {
     if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !cin) return null;
     try {
-        const encoded = encodeURIComponent(`(t.note_private:like:'%CIN: ${cin}%')`);
+        // Search by idprof1 (ProfId1DZ) which stores the CIN as a structured field
+        const encoded = encodeURIComponent(`(t.idprof1:=:'${cin}')`);
         const results = await dolibarrRequest('GET', `/thirdparties?sqlfilters=${encoded}&limit=5`);
         if (Array.isArray(results) && results.length > 0) {
             return results[0];
         }
         return null;
     } catch (error) {
-        console.error(`[Dolibarr] Search by CIN failed: ${error.message}`);
+        console.error(`[Dolibarr] Search by CIN (idprof1) failed: ${error.message}`);
         return null;
     }
 }
