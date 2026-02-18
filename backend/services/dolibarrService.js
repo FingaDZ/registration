@@ -163,15 +163,16 @@ function mapEntrepriseToDolibarr(data) {
 async function searchThirdPartyByCIN(cin) {
     if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !cin) return null;
     try {
-        // Dolibarr 22.x: thirdparties table alias is 's' in sqlfilters
-        const encoded = encodeURIComponent(`(s.idprof5:=:'${cin}')`);
-        const results = await dolibarrRequest('GET', `/thirdparties?sqlfilters=${encoded}&limit=5`);
+        // Use direct idprof5 query parameter (native Dolibarr API, works on all versions)
+        const encoded = encodeURIComponent(cin);
+        const results = await dolibarrRequest('GET', `/thirdparties?idprof5=${encoded}&limit=5`);
         if (Array.isArray(results) && results.length > 0) {
+            console.log(`[Dolibarr] CIN match found: ${results[0].name}`);
             return results[0];
         }
         return null;
     } catch (error) {
-        console.warn(`[Dolibarr] CIN sqlfilters failed: ${error.message}`);
+        console.warn(`[Dolibarr] CIN search failed: ${error.message}`);
         return null;
     }
 }
@@ -208,19 +209,16 @@ async function searchThirdPartyByName(name) {
 async function searchThirdPartyByNIF(nif, raisonSociale) {
     if (!DOLIBARR_ENABLED || !DOLIBARR_API_KEY || !nif) return null;
     try {
-        // Dolibarr 22.x: thirdparties table alias is 's' in sqlfilters
-        const encoded = encodeURIComponent(`(s.idprof2:=:'${nif}')`);
-        const results = await dolibarrRequest('GET', `/thirdparties?sqlfilters=${encoded}&limit=5`);
+        // Use direct idprof2 query parameter (native Dolibarr API, works on all versions)
+        const encoded = encodeURIComponent(nif);
+        const results = await dolibarrRequest('GET', `/thirdparties?idprof2=${encoded}&limit=5`);
         if (Array.isArray(results) && results.length > 0) {
+            console.log(`[Dolibarr] NIF match found: ${results[0].name}`);
             return results[0];
         }
         return null;
     } catch (error) {
-        console.warn(`[Dolibarr] NIF sqlfilters failed (${error.message}), trying name search...`);
-        // Fallback: search by company name
-        if (raisonSociale) {
-            return await searchThirdPartyByName(raisonSociale);
-        }
+        console.warn(`[Dolibarr] NIF search failed: ${error.message}`);
         return null;
     }
 }
