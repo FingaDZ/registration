@@ -93,7 +93,7 @@ function mapParticuliersToDolibarr(data) {
         fournisseur: '0',
         typent_code: 'TE_PRIVATE',
         status: '1',
-        idprof5: data.Num_CIN || '',  // CIN stored in idprof5 (free field, idprof1 is reserved for RC)
+        idprof5: data.Num_CIN || '',  // CIN (ProfId5DZ=CIN - configured in Dolibarr)
         note_private: [
             `Autorité: ${data.authority || ''}`,
             `Date livraison CIN: ${data.date_delivery || ''}`,
@@ -119,22 +119,20 @@ function mapEntrepriseToDolibarr(data) {
         address: data.Adresse_entreprise || '',
         town: data.place || '',
         country_code: 'DZ',
-        idprof1: data.rc || '',      // RC (ProfId1DZ)
-        idprof2: data.nif || '',     // NIF (ProfId2DZ - Observed NIF on server)
-        idprof3: data.article || '', // Article (ProfId3DZ - Observed AI on server)
-        idprof4: data.nis || '',     // NIS (ProfId4DZ)
-        client: '1',                // Mark as customer
-        code_client: '-1',          // Auto-generate client code
-        fournisseur: '0',           // Not a supplier
-        typent_code: 'TE_SMALL',    // Company type (small/medium enterprise)
-        code_client: '-1',          // Auto-generate client code
-        fournisseur: '0',           // Not a supplier
-        typent_code: 'TE_SMALL',    // Company type (small/medium enterprise)
-        status: '1',                // Active
-        price_level: '2',           // Niveau de prix 2
-        cond_reglement_code: 'RECEP', // A réception
-        mode_reglement_code: 'LIQ',   // Espèce
-        fk_account: '1',              // Compte bancaire 001
+        idprof1: data.rc || '',      // RC  (ProfId1DZ=RC)
+        idprof2: data.nif || '',     // NIF (ProfId2DZ=NIF)
+        idprof3: data.article || '', // AI  (ProfId3DZ=AI)
+        idprof4: data.nis || '',     // NIS (ProfId4DZ=NIS)
+        // idprof5 reserved for CIN on Particuliers (ProfId5DZ=CIN)
+        client: '1',
+        code_client: '-1',
+        fournisseur: '0',
+        typent_code: 'TE_SMALL',
+        status: '1',
+        price_level: '2',
+        cond_reglement_code: 'RECEP',
+        mode_reglement_code: 'LIQ',
+        fk_account: '1',
         note_private: [
             `Gérant: ${data.Prenom || ''} ${data.Nom || ''}`,
             `CIN Gérant: ${data.numero_cin_gerant || ''}`,
