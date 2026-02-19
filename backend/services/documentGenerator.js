@@ -204,5 +204,7 @@ async function generateDocuments(type, data) {
 
 module.exports = {
     generateDocuments,
-    generateReference
+    generateReference,
+    generateDocumentFromTemplate,
+    formatDate
 };
