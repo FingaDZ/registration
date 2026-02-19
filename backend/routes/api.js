@@ -337,7 +337,7 @@ router.put('/documents/:reference', requireRole(['admin', 'operator']), async (r
             ...data,
             date: formatDate(data.date),
             date_delivery: formatDate(data.date_delivery),
-            Date: formatDate(data.Date || data.date),
+            Date: formatDate(data.date), // Always use raw data.date — data.Date may already be formatted
             Reference_client: '',
             contratid: reference
         };

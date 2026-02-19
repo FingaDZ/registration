@@ -101,8 +101,9 @@ async function generateDocuments(type, data) {
             ...data,
             date: formatDate(data.date),
             date_delivery: formatDate(data.date_delivery),
-            Date: formatDate(data.Date || data.date),
-            Reference_client: '' // Will be filled after Dolibarr creation
+            Date: formatDate(data.date), // Always use raw data.date — data.Date may already be formatted
+            Reference_client: '', // Will be filled after Dolibarr creation
+            contratid: reference
         };
 
         if (type === 'entreprise' && data.date_cin_gerant) {
