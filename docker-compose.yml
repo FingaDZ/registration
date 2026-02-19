@@ -38,6 +38,8 @@ services:
     env_file:
       - ./backend/.env
     volumes:
+      - ./backend:/app
+      - backend-node-modules:/app/node_modules
       - ./backend/templates:/app/templates
       - generated-docs:/app/generated
     ports:
@@ -70,3 +72,4 @@ networks:
 volumes:
   postgres-data:
   generated-docs:
+  backend-node-modules:
