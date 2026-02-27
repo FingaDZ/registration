@@ -23,10 +23,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(ipFilter);
 app.use(deviceFilter);
 
-// Static files for generated documents
-// Protected static files? Maybe. For now allow, but user needs token to get path usually.
-app.use('/files', express.static(path.join(__dirname, 'generated')));
-
 // Authentication Routes (Public)
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
@@ -36,8 +32,21 @@ const { verifyToken } = require('./middleware/auth');
 const { requireRole } = require('./middleware/roles');
 const userRoutes = require('./routes/users');
 
-// Health check should be public for Docker/Monitoring?
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+// Public Health Check Endpoint for Docker
+const { pool } = require('./database/init');
+app.get('/api/health', async (req, res) => {
+    try {
+        const dbHealth = await pool.query('SELECT NOW()');
+        res.json({
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
+            database: 'connected',
+            dbTime: dbHealth.rows[0].now
+        });
+    } catch (error) {
+        res.status(503).json({ status: 'unhealthy', error: error.message });
+    }
+});
 
 // Protect all other API routes
 app.use('/api', verifyToken);
@@ -46,13 +55,11 @@ app.use('/api', verifyToken);
 app.use('/api/users', userRoutes); // Protected by requireRole('admin') inside the router
 
 // General API routes (Apply role checks inside routes or here)
-// Protect History: Only Admin can view history?
-// User said: "Opérateur: pas accès a l'historique"
-// So we apply middleware to specific paths if possible, or inside apiRoutes.
-// Since apiRoutes is a router, we can't easily split it here without reading it.
-// Assuming apiRoutes handles /history, /generate, etc.
-// I will check api.js content to see how to protect /history specifically.
 app.use('/api', apiRoutes);
+
+// Protected static files for generated documents
+// Must pass token as ?token=... in URL or Bearer Header for direct links
+app.use('/files', verifyToken, express.static(path.join(__dirname, 'generated')));
 
 // Root endpoint
 app.get('/', (req, res) => {

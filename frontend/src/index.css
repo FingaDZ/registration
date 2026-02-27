@@ -187,7 +187,8 @@ h1 {
 }
 
 .selection-card {
-  background: var(--surface-color);
+  background: rgba(18, 18, 18, 0.6);
+  backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
   padding: 4rem 2rem;
   text-decoration: none;
@@ -198,18 +199,42 @@ h1 {
   align-items: center;
   position: relative;
   overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.selection-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateY(-100%);
+  transition: transform 0.5s;
+}
+
+.selection-card:hover::before {
+  transform: translateY(0);
 }
 
 .selection-card:hover {
-  border-color: var(--primary);
+  border-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-5px);
-  background: var(--surface-hover);
+  background: rgba(30, 30, 30, 0.8);
+  box-shadow: 0 10px 40px -10px rgba(255, 255, 255, 0.1);
 }
 
 .card-icon {
-  font-size: 3rem;
+  font-size: 3.5rem;
   margin-bottom: 1.5rem;
-  opacity: 0.8;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+  transition: transform 0.3s;
+}
+
+.selection-card:hover .card-icon {
+  transform: scale(1.1);
 }
 
 .selection-card h2 {
@@ -230,10 +255,11 @@ h1 {
 .brand-title-large {
   font-size: 4rem !important;
   margin-bottom: 2rem !important;
-  background: linear-gradient(180deg, #fff 0%, #aaa 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #aaaaaa 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 10px 30px rgba(255, 255, 255, 0.15);
 }
 
 /* Forms - Floating Labels / Minimalist */
@@ -251,6 +277,7 @@ h1 {
   font-family: 'Chakra Petch', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  text-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
 }
 
 .btn-back {
@@ -264,20 +291,24 @@ h1 {
   font-size: 0.8rem;
   letter-spacing: 0.1em;
   transition: all 0.3s;
+  border-radius: 9999px;
 }
 
 .btn-back:hover {
-  border-color: var(--primary);
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .form {
-  /* Starlink forms often don't have a visible "container" background, 
-     just fields on the page. But for structure we'll keep a subtle one */
   background: transparent;
 }
 
 .form-section {
   margin-bottom: 4rem;
+  background: rgba(18, 18, 18, 0.4);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .form-section h2 {
@@ -285,7 +316,7 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 1rem;
   margin-bottom: 2rem;
 }
@@ -312,25 +343,31 @@ h1 {
   letter-spacing: 0.05em;
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
+  transition: color 0.3s;
+}
+
+.form-group:focus-within label {
+  color: var(--primary);
 }
 
 .form-group input,
 .form-group select {
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   padding: 1rem;
   font-size: 1rem;
-  border-radius: var(--radius-sm);
-  /* Sharper edges */
-  transition: all 0.2s;
+  border-radius: var(--radius-md);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: var(--primary);
-  background: black;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05), inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .form-group input::placeholder {
@@ -342,55 +379,81 @@ h1 {
   display: flex;
   gap: 1.5rem;
   justify-content: center;
-  /* Centered actions like Starlink */
   margin-top: 4rem;
   padding-top: 2rem;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Buttons - High Contrast */
 .btn {
   padding: 1rem 3rem;
-  /* Wide buttons */
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid transparent;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary {
   background: var(--primary);
   color: var(--primary-text);
   border-radius: 9999px;
-  /* Pill shape is very common in modern tech */
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  transform: skewX(-20deg);
+  transition: 0.5s;
 }
 
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-hover);
-  transform: scale(1.02);
+  transform: scale(1.02) translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:hover:not(:disabled):after {
+  left: 150%;
 }
 
 .btn-secondary {
-  background: transparent;
-  border: 1px solid var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--text-primary);
   border-radius: 9999px;
+  backdrop-filter: blur(5px);
 }
 
 .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.05);
 }
 
 .btn-success {
   background: var(--success);
   color: black;
   border-radius: 9999px;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
 }
 
 /* Result Section at Bottom */
@@ -481,33 +544,42 @@ h1 {
 
 .documents-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .documents-table th {
-  background: #080808;
+  background: rgba(0, 0, 0, 0.8);
   color: var(--text-secondary);
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   padding: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   text-align: left;
+  font-weight: 600;
 }
 
 .documents-table td {
   padding: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
   vertical-align: middle;
+  transition: background 0.2s;
 }
 
 .documents-table tr:last-child td {
   border-bottom: none;
 }
 
+.documents-table tbody tr {
+  transition: all 0.3s;
+}
+
 .documents-table tbody tr:hover {
-  background: var(--surface-hover);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: scale(1.001);
 }
 
 .no-data {
@@ -517,108 +589,13 @@ h1 {
   font-style: italic;
 }
 
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.75rem;
-}
-
-.reference {
-  font-family: 'Courier New', monospace;
-  color: var(--primary);
-}
-
-.badge {
-  padding: 0.5rem 1rem;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-  border-radius: 999px;
-}
-
-.badge-particuliers {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.badge-entreprise {
-  background: rgba(255, 255, 0, 0.1);
-  color: #fef08a;
-  border: 1px solid rgba(255, 255, 0, 0.2);
-}
-
-/* Pagination */
-.pagination {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: 2rem 0;
-  justify-content: center;
-  gap: 2rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-
-  .card-grid,
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .nav-container {
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .filters {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .table-container {
-    overflow-x: auto;
-  }
-}
-
-.history-container h1 {
-  font-family: 'Chakra Petch', sans-serif;
-  text-transform: uppercase;
-}
-
-.filters {
-  background: var(--surface-color);
-  padding: 2rem;
-  border: 1px solid var(--border-color);
-  margin-bottom: 3rem;
-  align-items: flex-end;
-}
-
-.table-container {
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.documents-table th {
-  background: #000;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+.documents-table {
+  width: 100%;
 }
 
 .documents-table td {
   padding: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
 }
 
