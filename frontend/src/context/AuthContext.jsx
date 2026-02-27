@@ -20,31 +20,33 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    const login = async (username, password) => {
+    const login = async (username, password, retries = 3) => {
         try {
-            // Adjust URL based on environment (Vite proxy handles /api usually, but explicit here if needed)
-            // Using relative path assuming proxy or same origin
             const response = await axios.post('/api/auth/login', { username, password });
 
             if (response.data.success) {
                 const { token, user } = response.data;
-
-                // Save to storage
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(user));
-
-                // Set state
                 setUser(user);
-
-                // Set header
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                 return { success: true };
             }
         } catch (error) {
+            // S'il s'agit d'une erreur 502 (Backend pas encore prêt) et qu'il reste des essais
+            if (error.response?.status === 502 && retries > 0) {
+                console.warn(`Login 502 Gateway, retrying... (${retries} attempts left)`);
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve(login(username, password, retries - 1));
+                    }, 3000);
+                });
+            }
+
             console.error('Login failed:', error);
             return {
                 success: false,
-                error: error.response?.data?.error || 'Échec de connexion'
+                error: error.response?.data?.error || 'Échec de connexion (Serveur indisponible)'
             };
         }
     };
