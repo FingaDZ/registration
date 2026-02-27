@@ -25,7 +25,7 @@ function DocumentHistory() {
         fetchConfig();
     }, [filters, pagination.offset]);
 
-    const fetchConfig = async () => {
+    const fetchConfig = async (retries = 3) => {
         try {
             const [modelsRes, offersRes] = await Promise.all([
                 axios.get('/api/config/models'),
@@ -34,7 +34,10 @@ function DocumentHistory() {
             setCpeModels(modelsRes.data.map(m => m.name));
             setInternetOffers(offersRes.data.map(o => o.name));
         } catch (err) {
-            console.error('Error fetching config:', err);
+            console.error(`Error fetching config (${retries} retries left):`, err);
+            if (retries > 0) {
+                setTimeout(() => fetchConfig(retries - 1), 3000);
+            }
         }
     };
 
