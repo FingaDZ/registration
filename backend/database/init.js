@@ -14,14 +14,34 @@ const pool = new Pool({
     connectionTimeoutMillis: 2000,
 });
 
-// Initialize database schema
+// Initialize database schema + run migrations automatically
 async function initializeDatabase() {
     try {
+        // 1. Main schema (idempotent - uses CREATE TABLE IF NOT EXISTS)
         const schemaPath = path.join(__dirname, 'schema.sql');
         const schema = fs.readFileSync(schemaPath, 'utf8');
-
         await pool.query(schema);
         console.log('✓ Database schema initialized successfully');
+
+        // 2. Run all migration files automatically (idempotent)
+        const migrationsDir = path.join(__dirname, 'migrations');
+        if (fs.existsSync(migrationsDir)) {
+            const files = fs.readdirSync(migrationsDir)
+                .filter(f => f.endsWith('.sql'))
+                .sort(); // alphabetical order ensures consistent execution
+
+            for (const file of files) {
+                try {
+                    const migrationSql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+                    await pool.query(migrationSql);
+                    console.log(`✓ Migration applied: ${file}`);
+                } catch (migErr) {
+                    // Log but don't crash — migrations use IF NOT EXISTS / ON CONFLICT
+                    console.warn(`⚠ Migration warning (${file}): ${migErr.message}`);
+                }
+            }
+        }
+
     } catch (error) {
         console.error('✗ Error initializing database:', error.message);
         throw error;
