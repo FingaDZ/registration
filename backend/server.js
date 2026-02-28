@@ -94,22 +94,34 @@ app.use((req, res) => {
 
 // Initialize database and start server
 async function startServer() {
-    try {
-        console.log('🚀 Starting Registration Form API...');
+    let retries = 10;
+    while (retries > 0) {
+        try {
+            console.log('🚀 Starting Registration Form API...');
 
-        // Initialize database
-        await initializeDatabase();
+            // Initialize database
+            await initializeDatabase();
 
-        // Start server
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`✓ Server running on port ${PORT}`);
-            console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`✓ API available at http://localhost:${PORT}`);
-        });
+            // Start server
+            app.listen(PORT, '0.0.0.0', () => {
+                console.log(`✓ Server running on port ${PORT}`);
+                console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+                console.log(`✓ API available at http://localhost:${PORT}`);
+            });
 
-    } catch (error) {
-        console.error('✗ Failed to start server:', error);
-        process.exit(1);
+            // Break loop on success
+            break;
+
+        } catch (error) {
+            console.error(`✗ Failed to start server (Retries left: ${retries - 1}):`, error.message);
+            retries -= 1;
+            if (retries === 0) {
+                console.error('✗ Exhausted all retries, shutting down.');
+                process.exit(1);
+            }
+            // Wait 5 seconds before retrying
+            await new Promise(res => setTimeout(res, 5000));
+        }
     }
 }
 
