@@ -16,6 +16,7 @@ function EntrepriseForm() {
     const [internetOffers, setInternetOffers] = useState([]);
 
     const [formData, setFormData] = useState({
+        // French (Latin) fields
         raison_sociale: '',
         Adresse_entreprise: '',
         nif: '',
@@ -36,7 +37,15 @@ function EntrepriseForm() {
         cpe_model: '',
         cpe_serial: '',
         date: new Date().toISOString().split('T')[0],
-        internet_offer: ''
+        internet_offer: '',
+        // Arabic fields (for AR document)
+        raison_sociale_ar: '',
+        Adresse_entreprise_ar: '',
+        Nom_ar: '',
+        Prenom_ar: '',
+        authority_gerant_ar: '',
+        Adresse_ar: '',
+        place_ar: ''
     });
 
     useEffect(() => {
@@ -178,177 +187,149 @@ function EntrepriseForm() {
             <form onSubmit={handleSubmit} className="form">
                 <div className="form-section">
                     <h2>Informations de l'Entreprise</h2>
-                    <div className="form-grid">
-                        <div className="form-group full-width">
-                            <label htmlFor="raison_sociale">Raison Sociale *</label>
-                            <input
-                                type="text"
-                                id="raison_sociale"
-                                name="raison_sociale"
-                                value={formData.raison_sociale}
-                                onChange={handleChange}
-                                placeholder="ex: SARL EXEMPLE"
-                                required
-                            />
-                        </div>
 
-                        <div className="form-group full-width">
-                            <label htmlFor="Adresse_entreprise">Adresse du Siège Social *</label>
-                            <input
-                                type="text"
-                                id="Adresse_entreprise"
-                                name="Adresse_entreprise"
-                                value={formData.Adresse_entreprise}
-                                onChange={handleChange}
-                                placeholder="ex: Zone Industrielle Oued Smar, Alger"
-                                required
-                            />
+                    {/* Bilingual two-column layout */}
+                    <div className="bilingual-grid">
+                        <div className="lang-col lang-fr">
+                            <div className="lang-col-header">🇫🇷 Version Française</div>
+                            <div className="form-group">
+                                <label htmlFor="raison_sociale">Raison Sociale *</label>
+                                <input type="text" id="raison_sociale" name="raison_sociale"
+                                    value={formData.raison_sociale} onChange={handleChange}
+                                    placeholder="ex: SARL EXEMPLE" required />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="Adresse_entreprise">Adresse du Siège Social *</label>
+                                <input type="text" id="Adresse_entreprise" name="Adresse_entreprise"
+                                    value={formData.Adresse_entreprise} onChange={handleChange}
+                                    placeholder="ex: 12 Rue Didouche Mourad, Alger" required />
+                            </div>
                         </div>
-
+                        <div className="lang-col lang-ar" dir="rtl">
+                            <div className="lang-col-header">🇩🇿 النسخة العربية</div>
+                            <div className="form-group">
+                                <label htmlFor="raison_sociale_ar">التسمية التجارية</label>
+                                <input type="text" id="raison_sociale_ar" name="raison_sociale_ar"
+                                    value={formData.raison_sociale_ar} onChange={handleChange}
+                                    placeholder="مثال: شركة مثال" />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="Adresse_entreprise_ar">عنوان المقر الاجتماعي</label>
+                                <input type="text" id="Adresse_entreprise_ar" name="Adresse_entreprise_ar"
+                                    value={formData.Adresse_entreprise_ar} onChange={handleChange}
+                                    placeholder="مثال: 12 شارع ديدوش، الجزائر" />
+                            </div>
+                        </div>
+                    </div>
+                    {/* Fiscal / Identification fields */}
+                    <div className="form-grid" style={{ marginTop: '1.5rem' }}>
                         <div className="form-group">
                             <label htmlFor="nif">NIF *</label>
-                            <input
-                                type="text"
-                                id="nif"
-                                name="nif"
-                                value={formData.nif}
-                                onChange={handleChange}
-                                required
-                            />
+                            <input type="text" id="nif" name="nif" value={formData.nif} onChange={handleChange} required />
                         </div>
 
                         <div className="form-group">
                             <label htmlFor="nis">NIS *</label>
-                            <input
-                                type="text"
-                                id="nis"
-                                name="nis"
-                                value={formData.nis}
-                                onChange={handleChange}
-                                required
-                            />
+                            <input type="text" id="nis" name="nis" value={formData.nis} onChange={handleChange} required />
                         </div>
 
                         <div className="form-group">
                             <label htmlFor="rc">Registre de Commerce (RC) *</label>
-                            <input
-                                type="text"
-                                id="rc"
-                                name="rc"
-                                value={formData.rc}
-                                onChange={handleChange}
-                                required
-                            />
+                            <input type="text" id="rc" name="rc" value={formData.rc} onChange={handleChange} required />
                         </div>
 
                         <div className="form-group">
                             <label htmlFor="article">Numéro Article d'Imposition</label>
-                            <input
-                                type="text"
-                                id="article"
-                                name="article"
-                                value={formData.article}
-                                onChange={handleChange}
-                            />
+                            <input type="text" id="article" name="article" value={formData.article} onChange={handleChange} />
                         </div>
                     </div>
-                </div>
+                </div >
 
                 <div className="form-section">
                     <h2>Informations du Gérant / Représentant</h2>
-                    <div className="form-grid">
-                        <div className="form-group">
-                            <label htmlFor="Nom">Nom du gérant *</label>
-                            <input
-                                type="text"
-                                id="Nom"
-                                name="Nom"
-                                value={formData.Nom}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
 
-                        <div className="form-group">
-                            <label htmlFor="Prenom">Prénom du gérant *</label>
-                            <input
-                                type="text"
-                                id="Prenom"
-                                name="Prenom"
-                                value={formData.Prenom}
-                                onChange={handleChange}
-                                required
-                            />
+                    {/* Bilingual two-column layout for manager */}
+                    <div className="bilingual-grid">
+                        <div className="lang-col lang-fr">
+                            <div className="lang-col-header">🇫🇷 Version Française</div>
+                            <div className="form-group">
+                                <label htmlFor="Nom">Nom du gérant *</label>
+                                <input type="text" id="Nom" name="Nom" value={formData.Nom}
+                                    onChange={handleChange} required />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="Prenom">Prénom du gérant *</label>
+                                <input type="text" id="Prenom" name="Prenom" value={formData.Prenom}
+                                    onChange={handleChange} required />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="authority_gerant">Autorité de délivrance *</label>
+                                <input type="text" id="authority_gerant" name="authority_gerant"
+                                    value={formData.authority_gerant} onChange={handleChange} required />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="Adresse">Adresse personnelle du gérant</label>
+                                <input type="text" id="Adresse" name="Adresse" value={formData.Adresse}
+                                    onChange={handleChange} />
+                            </div>
                         </div>
+                        <div className="lang-col lang-ar" dir="rtl">
+                            <div className="lang-col-header">🇩🇿 النسخة العربية</div>
+                            <div className="form-group">
+                                <label htmlFor="Nom_ar">لقب المسير</label>
+                                <input type="text" id="Nom_ar" name="Nom_ar" value={formData.Nom_ar}
+                                    onChange={handleChange} placeholder="مثال: بن علي" />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="Prenom_ar">اسم المسير</label>
+                                <input type="text" id="Prenom_ar" name="Prenom_ar" value={formData.Prenom_ar}
+                                    onChange={handleChange} placeholder="مثال: محمد" />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="authority_gerant_ar">جهة الإصدار</label>
+                                <input type="text" id="authority_gerant_ar" name="authority_gerant_ar"
+                                    value={formData.authority_gerant_ar} onChange={handleChange}
+                                    placeholder="مثال: بلدية الجزائر الوسطى" />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="Adresse_ar">عنوان المسير</label>
+                                <input type="text" id="Adresse_ar" name="Adresse_ar" value={formData.Adresse_ar}
+                                    onChange={handleChange} placeholder="مثال: 12 شارع الشهداء، الجزائر" />
+                            </div>
+                        </div>
+                    </div>
 
+                    {/* Shared universal fields */}
+                    <div className="form-grid" style={{ marginTop: '1.5rem' }}>
                         <div className="form-group">
                             <label htmlFor="numero_cin_gerant">Numéro CIN Gérant *</label>
-                            <input
-                                type="text"
-                                id="numero_cin_gerant"
-                                name="numero_cin_gerant"
-                                value={formData.numero_cin_gerant}
-                                onChange={handleChange}
-                                required
-                            />
+                            <input type="text" id="numero_cin_gerant" name="numero_cin_gerant"
+                                value={formData.numero_cin_gerant} onChange={handleChange} required />
                         </div>
-
                         <div className="form-group">
                             <label htmlFor="date_cin_gerant">Date de délivrance CIN</label>
-                            <input
-                                type="date"
-                                id="date_cin_gerant"
-                                name="date_cin_gerant"
-                                value={formData.date_cin_gerant}
-                                onChange={handleChange}
-                            />
+                            <input type="date" id="date_cin_gerant" name="date_cin_gerant"
+                                value={formData.date_cin_gerant} onChange={handleChange} />
                         </div>
-
-                        <div className="form-group full-width">
-                            <label htmlFor="authority_gerant">Autorité de délivrance *</label>
-                            <input
-                                type="text"
-                                id="authority_gerant"
-                                name="authority_gerant"
-                                value={formData.authority_gerant}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
                         <div className="form-group">
                             <label htmlFor="mail">Email professionnel</label>
-                            <input
-                                type="email"
-                                id="mail"
-                                name="mail"
-                                value={formData.mail}
-                                onChange={handleChange}
-                                placeholder="Optionnel"
-                            />
+                            <input type="email" id="mail" name="mail" value={formData.mail}
+                                onChange={handleChange} placeholder="Optionnel" />
                         </div>
-
                         <div className="form-group">
                             <label htmlFor="mobile_gerant">Mobile gérant *</label>
-                            <input
-                                type="tel"
-                                id="mobile_gerant"
-                                name="mobile_gerant"
-                                value={formData.mobile_gerant}
-                                onChange={handleChange}
-                                required
-                            />
+                            <input type="tel" id="mobile_gerant" name="mobile_gerant"
+                                value={formData.mobile_gerant} onChange={handleChange} required />
                         </div>
-
-                        <div className="form-group full-width">
-                            <label htmlFor="Adresse">Adresse personnelle du gérant</label>
-                            <input
-                                type="text"
-                                id="Adresse"
-                                name="Adresse"
-                                value={formData.Adresse}
-                                onChange={handleChange}
-                            />
+                        <div className="form-group">
+                            <label htmlFor="place">Lieu de signature</label>
+                            <input type="text" id="place" name="place" value={formData.place}
+                                onChange={handleChange} placeholder="ex: Alger" />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="place_ar">مكان التوقيع (AR)</label>
+                            <input type="text" id="place_ar" name="place_ar" value={formData.place_ar}
+                                onChange={handleChange} placeholder="مثال: الجزائر" dir="rtl" />
                         </div>
                     </div>
                 </div>
@@ -448,7 +429,7 @@ function EntrepriseForm() {
                         {loading ? 'Génération en cours...' : '📄 Générer les documents'}
                     </button>
                 </div>
-            </form>
+            </form >
 
             {result && (
                 <div className="result-section">
@@ -476,8 +457,9 @@ function EntrepriseForm() {
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 

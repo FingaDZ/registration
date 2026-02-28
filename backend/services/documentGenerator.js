@@ -96,47 +96,70 @@ async function generateDocuments(type, data) {
         // Generate reference
         const reference = generateReference();
 
-        // Build formattedData FIRST (needed for template validation)
-        const formattedData = {
+        // --- Build FR data (Latin fields only) ---
+        const formattedDataFr = {
             ...data,
             date: formatDate(data.date),
             date_delivery: formatDate(data.date_delivery),
-            Date: formatDate(data.date), // Always use raw data.date — data.Date may already be formatted
-            Reference_client: '', // Will be filled after Dolibarr creation
+            Date: formatDate(data.date),
+            Reference_client: '',
             contratid: reference
         };
-
         if (type === 'entreprise' && data.date_cin_gerant) {
-            formattedData.date_cin_gerant = formatDate(data.date_cin_gerant);
+            formattedDataFr.date_cin_gerant = formatDate(data.date_cin_gerant);
         }
-
-        // Handle Internet Offer mapping
         if (data.internet_offer) {
-            formattedData.offre_p = type === 'particuliers' ? data.internet_offer : '';
-            formattedData.offre_e = type === 'entreprise' ? data.internet_offer : '';
+            formattedDataFr.offre_p = type === 'particuliers' ? data.internet_offer : '';
+            formattedDataFr.offre_e = type === 'entreprise' ? data.internet_offer : '';
         } else {
-            formattedData.offre_p = '';
-            formattedData.offre_e = '';
+            formattedDataFr.offre_p = '';
+            formattedDataFr.offre_e = '';
         }
 
-        // Map contract ID to the auto-generated reference
-        formattedData.contratid = reference;
+        // --- Build AR data (Arabic _ar fields, fallback to Latin if empty) ---
+        const ar = (field) => data[`${field}_ar`]?.trim() || data[field] || '';
+        const formattedDataAr = {
+            ...formattedDataFr,
+            // Personal / Particuliers
+            Nom: ar('Nom'),
+            Prenom: ar('Prenom'),
+            Adresse: ar('Adresse'),
+            authority: ar('authority'),
+            place: ar('place'),
+            // Entreprise
+            raison_sociale: ar('raison_sociale'),
+            Adresse_entreprise: ar('Adresse_entreprise'),
+            authority_gerant: ar('authority_gerant'),
+        };
+
+        // Shared aliases for the AR version (keep _ar keys as well for direct template use)
+        Object.keys(data).filter(k => k.endsWith('_ar')).forEach(k => {
+            formattedDataAr[k] = data[k];
+        });
+
+        // Keep a "combined" formattedData for DB storage (stores everything)
+        const formattedData = { ...formattedDataFr };
+        // Store AR fields in DB too
+        Object.keys(data).filter(k => k.endsWith('_ar')).forEach(k => {
+            formattedData[k] = data[k];
+        });
 
         // --- Validate templates BEFORE calling Dolibarr ---
-        // If template has syntax errors, stop here — don't create orphaned Dolibarr entry
         try {
-            generateDocumentFromTemplate(templateFr, formattedData);
-            generateDocumentFromTemplate(templateAr, formattedData);
+            generateDocumentFromTemplate(templateFr, formattedDataFr);
+            generateDocumentFromTemplate(templateAr, formattedDataAr);
         } catch (templateError) {
             console.error('[Generator] Template validation failed:', templateError.message);
             throw templateError;
         }
 
-        // Create client in Dolibarr to get the code_client for the document
+        // Create client in Dolibarr (Latin/FR data only)
         let dolibarrResult = null;
         try {
             dolibarrResult = await dolibarrService.createThirdParty(data, type, reference);
             if (dolibarrResult && dolibarrResult.code_client) {
+                formattedDataFr.Reference_client = dolibarrResult.code_client;
+                formattedDataAr.Reference_client = dolibarrResult.code_client;
                 formattedData.Reference_client = dolibarrResult.code_client;
                 console.log(`[Generator] Using Dolibarr code_client: ${dolibarrResult.code_client}`);
             }
@@ -144,9 +167,9 @@ async function generateDocuments(type, data) {
             console.error('[Dolibarr] Error during third party creation:', dolibarrError.message);
         }
 
-        // Generate final documents (with Reference_client now filled)
-        const docFr = generateDocumentFromTemplate(templateFr, formattedData);
-        const docAr = generateDocumentFromTemplate(templateAr, formattedData);
+        // Generate final documents with language-specific data
+        const docFr = generateDocumentFromTemplate(templateFr, formattedDataFr);
+        const docAr = generateDocumentFromTemplate(templateAr, formattedDataAr);
 
         // Create output directory structure
         const date = new Date();

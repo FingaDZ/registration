@@ -327,6 +327,57 @@ h1 {
   gap: 2rem;
 }
 
+/* Bilingual Grid (Side by side FR / AR) */
+.bilingual-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.lang-col {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lang-fr {
+  border-left: 3px solid #3498db;
+  /* Blue for French side indicator */
+}
+
+.lang-ar {
+  border-right: 3px solid #2ecc71;
+  /* Green for Arabic side indicator */
+}
+
+.lang-col-header {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lang-fr .lang-col-header {
+  color: #3498db;
+}
+
+.lang-ar .lang-col-header {
+  color: #2ecc71;
+}
+
+@media (max-width: 768px) {
+  .bilingual-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
