@@ -1,7 +1,12 @@
 const jwt = require('jsonwebtoken');
 
-// Secret key for signing tokens (should be in .env)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-it';
+// Secret key for signing tokens — MUST be set via environment variable
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    console.error('\x1b[31m✗ FATAL: JWT_SECRET environment variable is not set!\x1b[0m');
+    console.error('  Set it in docker-compose.yml or .env before starting the server.');
+    process.exit(1);
+}
 
 /**
  * Generate a JWT token for a user
@@ -12,7 +17,7 @@ const generateToken = (user) => {
     return jwt.sign(
         { id: user.id, username: user.username, role: user.role },
         JWT_SECRET,
-        { expiresIn: '24h' }
+        { expiresIn: '8h' }
     );
 };
 

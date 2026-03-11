@@ -5,6 +5,7 @@ const path = require('path');
 const { initializeDatabase, closeDatabaseConnection } = require('./database/init');
 const apiRoutes = require('./routes/api');
 const { ipFilter, deviceFilter, helmet, limiter } = require('./middleware/security');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,7 +16,10 @@ app.set('trust proxy', 1);
 // Middleware
 app.use(helmet());
 app.use(process.env.NODE_ENV === 'production' ? limiter : (req, res, next) => next());
-app.use(cors());
+app.use(cors({
+    origin: ['http://192.168.20.33', 'http://localhost'],
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -23,8 +27,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(ipFilter);
 app.use(deviceFilter);
 
-// Authentication Routes (Public)
+// Login-specific rate limiter (brute-force protection)
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 login attempts per window
+    message: { error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// Authentication Routes (Public, with login rate limit)
 const authRoutes = require('./routes/auth');
+app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);
 
 // Protected API Routes
